@@ -3,273 +3,160 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>잠코치 - AI 수면 & 스마트폰 습관 도우미</title>
-    
-    <!-- External Dependencies -->
+    <title>잠코치 - 리프레시 UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="app-container">
         
-        <!-- App Header -->
-        <header class="app-header">
-            <div class="logo-area">
-                <i class="fa-solid fa-moon logo-icon"></i>
-                <h1 class="app-title">SleepCoach <span class="badge">MVP</span></h1>
-            </div>
-            <button id="btn-settings" class="icon-btn" aria-label="Settings">
-                <i class="fa-solid fa-sliders"></i>
+        <!-- Header -->
+        <header class="top-header">
+            <div class="date-badge" id="current-date">2024년 6월 20일</div>
+            <button class="settings-btn" id="btn-settings-toggle">
+                <i class="fa-solid fa-gear"></i>
             </button>
+            <!-- Settings Speech Bubble -->
+            <div class="settings-bubble" id="settings-bubble">
+                <button id="btn-open-api">API 설정</button>
+                <button id="btn-reset-data" style="color: #ef4444;">데이터 초기화</button>
+            </div>
         </header>
 
-        <!-- Main Content Area -->
-        <main class="app-main">
-            
-            <!-- VIEW 1: Daily Log (기록하기) -->
-            <section id="view-input" class="app-view active">
-                <header class="view-header">
-                    <div class="date-badge" id="current-date">날짜 로딩중...</div>
-                    <h2 class="view-title">오늘의 수면 기록</h2>
-                    <p class="view-subtitle">솔직하게 기록할수록 더 정확한 분석을 받을 수 있어요.</p>
-                </header>
+        <!-- VIEW 1: RECORD -->
+        <main class="app-view active" id="view-input">
+            <div class="page-title-group">
+                <h2 class="page-title">오늘 밤도<br>기록해볼까요?</h2>
+                <p class="page-subtitle">괜찮아요, 기록만 해도 습관이 보여요.</p>
+            </div>
 
-                <form id="sleep-form" class="glass-card form-card">
-                    
-                    <!-- Time Inputs -->
-                    <div class="form-group">
-                        <label for="input-sleep-time"><i class="fa-regular fa-clock icon-indigo"></i> 어제 몇 시에 잠자리에 들었나요?</label>
-                        <div class="time-input-wrapper">
-                            <input type="time" id="input-sleep-time" value="23:00" required>
+            <form id="sleep-form" style="display:flex; flex-direction:column; flex:1;">
+                
+                <div class="time-cards-row">
+                    <div class="time-card">
+                        <label>어제 잔 시각</label>
+                        <div class="time-input-styled">
+                            <input type="time" id="input-sleep-time" value="23:20" required>
                         </div>
                     </div>
-
-                    <div class="form-group">
-                        <label for="input-wake-time"><i class="fa-regular fa-sun icon-amber"></i> 오늘 몇 시에 일어났나요?</label>
-                        <div class="time-input-wrapper">
+                    <div class="time-card">
+                        <label>오늘 일어난 시각</label>
+                        <div class="time-input-styled">
                             <input type="time" id="input-wake-time" value="07:00" required>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Duration Preview -->
-                    <div class="duration-preview-container">
-                        <div class="duration-badge">
-                            <i class="fa-solid fa-bed"></i> 총 <strong id="preview-hours">8.0</strong>시간 수면
+                <div class="ui-card">
+                    <h3>자기 전 폰 사용 시간</h3>
+                    <div class="slider-container">
+                        <div class="slider-progress" id="slider-progress-fill" style="width: 25%;"></div>
+                        <input type="range" id="input-phone-time" min="0" max="240" step="10" value="60">
+                        <div class="slider-labels">
+                            <span>0</span>
+                            <span id="phone-time-display">90min</span>
+                            <span>240min</span>
                         </div>
                     </div>
+                </div>
 
-                    <!-- Phone Usage Slider -->
-                    <div class="form-group">
-                        <div class="slider-header">
-                            <label for="input-phone-time"><i class="fa-solid fa-mobile-screen icon-teal"></i> 자기 전 스마트폰 사용 시간</label>
-                            <span class="slider-value" id="phone-time-display">60분</span>
-                        </div>
-                        <div class="slider-wrapper">
-                            <input type="range" id="input-phone-time" min="0" max="240" step="10" value="60">
-                            <div class="slider-labels">
-                                <span>0분</span>
-                                <span>1시간</span>
-                                <span>2시간</span>
-                                <span>3시간</span>
-                                <span>4시간+</span>
-                            </div>
-                        </div>
+                <div class="ui-card">
+                    <h3>오늘 컨디션</h3>
+                    <div class="emoji-row" id="condition-rating-group">
+                        <button type="button" class="emoji-btn" data-value="1">😳</button>
+                        <button type="button" class="emoji-btn" data-value="2">😐</button>
+                        <button type="button" class="emoji-btn" data-value="3">🙂</button>
+                        <button type="button" class="emoji-btn" data-value="4">😄</button>
+                        <button type="button" class="emoji-btn" data-value="5">🤩</button>
                     </div>
+                </div>
 
-                    <!-- Condition Rating -->
-                    <div class="form-group">
-                        <label><i class="fa-regular fa-face-smile icon-purple"></i> 오늘 아침 컨디션은 어땠나요?</label>
-                        <div class="rating-container" id="condition-rating-group">
-                            <div class="rating-btn" data-value="1">
-                                <span class="emoji">😫</span>
-                                <span class="label">최악</span>
-                            </div>
-                            <div class="rating-btn" data-value="2">
-                                <span class="emoji">🥱</span>
-                                <span class="label">피곤</span>
-                            </div>
-                            <div class="rating-btn" data-value="3">
-                                <span class="emoji">😐</span>
-                                <span class="label">보통</span>
-                            </div>
-                            <div class="rating-btn" data-value="4">
-                                <span class="emoji">🙂</span>
-                                <span class="label">좋음</span>
-                            </div>
-                            <div class="rating-btn" data-value="5">
-                                <span class="emoji">🤩</span>
-                                <span class="label">최상</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Daytime Sleepiness Toggle -->
-                    <div class="form-group">
-                        <div class="toggle-card">
-                            <div class="toggle-info">
-                                <label for="input-day-sleepy"><i class="fa-solid fa-battery-quarter icon-rose"></i> 오늘 낮에 심하게 졸렸나요?</label>
-                                <p>오후 수업이나 활동 중 참기 힘들 정도로 졸았다면 체크해주세요.</p>
-                            </div>
+                <div class="ui-card">
+                    <div class="toggle-row">
+                        <h3 style="margin:0;">낮에 졸렸나요</h3>
+                        <div style="display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:0.85rem; color:#a0a2b1;">예/아니오</span>
                             <div class="toggle-switch">
                                 <input type="checkbox" id="input-day-sleepy">
                                 <label for="input-day-sleepy" class="toggle-slider"></label>
                             </div>
                         </div>
                     </div>
-
-                    <!-- Submit Button -->
-                    <button type="submit" id="btn-save-record" class="btn-primary" disabled>
-                        <span>기록 저장하고 AI 분석 보기</span>
-                        <i class="fa-solid fa-arrow-right"></i>
-                    </button>
-                </form>
-            </section>
-
-            <!-- VIEW 2: Dashboard (분석 & 미션) -->
-            <section id="view-data" class="app-view">
-                
-                <!-- 2-1: Locked State (Not enough data) -->
-                <div id="analysis-locked" class="glass-card locked-state">
-                    <div class="locked-icon">
-                        <i class="fa-solid fa-lock"></i>
-                    </div>
-                    <h3>분석을 위한 데이터 수집 중</h3>
-                    <p>AI가 정확한 패턴을 분석하기 위해 <br><strong class="text-primary-light"><span id="locked-needed-days">3</span>일치</strong> 데이터가 더 필요해요.</p>
-                    
-                    <div class="progress-track">
-                        <div class="progress-fill" id="locked-progress-fill" style="width: 0%;"></div>
-                    </div>
-                    <span class="stat-label" id="locked-progress-text">0/3일 기록 완료</span>
-
-                    <button id="btn-load-seed-locked" class="btn-secondary">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> 가상 데이터로 데모 보기
-                    </button>
                 </div>
 
-                <!-- 2-2: Unlocked State (Analysis Active) -->
-                <div id="analysis-unlocked" class="dashboard-grid" style="display: none;">
-                    
-                    <!-- Weekly Stats -->
-                    <div class="glass-card stats-card">
-                        <div class="stats-header">
-                            <i class="fa-solid fa-chart-simple icon-teal"></i> 이번 주 요약
-                        </div>
-                        <div class="stats-row">
-                            <div class="stat-box">
-                                <span class="stat-label">평균 수면</span>
-                                <span class="stat-value" id="stat-avg-sleep">-</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-label">자기전 폰</span>
-                                <span class="stat-value" id="stat-avg-phone">-</span>
-                            </div>
-                            <div class="stat-box">
-                                <span class="stat-label">평균 컨디션</span>
-                                <span class="stat-value" id="stat-avg-condition">-</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- AI Coach Comment -->
-                    <div class="glass-card coach-card">
-                        <div class="coach-header">
-                            <div class="coach-avatar">🦉</div>
-                            <div class="coach-title">
-                                <h4>AI 수면코치 올리</h4>
-                                <p>나만의 맞춤 수면 어드바이저</p>
-                            </div>
-                        </div>
-                        <div class="coach-message">
-                            <div id="ai-comment-text" class="loading-msg">
-                                <i class="fa-solid fa-circle-notch fa-spin"></i>
-                                분석 결과를 불러오고 있어요...
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Detected Patterns -->
-                    <div class="glass-card">
-                        <div class="stats-header">
-                            <i class="fa-solid fa-magnifying-glass-chart icon-amber"></i> 발견된 수면 패턴
-                        </div>
-                        <div class="patterns-list" id="patterns-list">
-                            <!-- Injected by JS -->
-                        </div>
-                    </div>
-
-                    <!-- Today's Mission -->
-                    <div class="glass-card mission-card">
-                        <div class="mission-badge">TODAY'S MISSION</div>
-                        <div class="stats-header">
-                            <i class="fa-solid fa-bullseye icon-teal"></i> 오늘의 맞춤 미션
-                        </div>
-                        <div class="mission-content" id="mission-container">
-                            <p class="mission-text" id="mission-text">...</p>
-                            
-                            <button id="btn-complete-mission" class="btn-complete">
-                                <i class="fa-regular fa-circle-check"></i> 미션 완료하기
-                            </button>
-                            
-                            <div id="mission-done-state" class="mission-done-state">
-                                <i class="fa-solid fa-circle-check"></i> 오늘 미션을 멋지게 완수했어요!
-                            </div>
-                        </div>
-                    </div>
-
-                    <button id="btn-go-record" class="btn-secondary" style="width:100%; justify-content:center; margin-top:0;">
-                        <i class="fa-solid fa-pen"></i> 오늘 기록 수정하기
-                    </button>
-                </div>
-            </section>
+                <button type="submit" id="btn-save-record" class="btn-submit" disabled>기록 저장하기</button>
+            </form>
         </main>
 
-        <!-- Bottom Navigation -->
+        <!-- VIEW 2: ANALYSIS -->
+        <main class="app-view" id="view-analysis">
+            <div id="analysis-locked" class="ui-card" style="text-align:center; padding: 40px 20px;">
+                <h3 style="justify-content:center;">3일만 더 기록하면 분석을 시작해요</h3>
+                <div class="progress-container">
+                    <div class="progress-fill" id="locked-progress-fill" style="width: 0%;"></div>
+                </div>
+            </div>
+
+            <div id="analysis-unlocked" style="display: none; flex-direction:column;">
+                <div class="grad-card">
+                    <i class="fa-solid fa-moon moon-icon-bg"></i>
+                    <h3>이번 주 한눈에</h3>
+                    <div class="huge-text" id="stat-avg-sleep">6시간 20분</div>
+                    <div class="sub-text">지난 7일 평균이에요</div>
+                </div>
+
+                <div class="split-cards" id="patterns-list">
+                    <!-- Injected by JS -->
+                </div>
+
+                <div class="ui-card chat-card">
+                    <h3>잠코치 한마디</h3>
+                    <p id="ai-comment-text" class="loading">요즘 조금 늦게 자는 날이 많았네요. 오늘은 완벽하게 하려고 하기보다, 폰을 10분만 일찍 내려놓는 것부터 해봐요. 그 정도면 충분히 잘하고 있어요.</p>
+                </div>
+            </div>
+        </main>
+
+        <!-- VIEW 3: MISSION -->
+        <main class="app-view" id="view-mission">
+            
+            <div id="mission-active" class="grad-card dark mission-card">
+                <h3><i class="fa-solid fa-wand-magic-sparkles"></i> 오늘의 미션</h3>
+                <div class="mission-text" id="mission-text">오늘은 11시 전에 폰을 충전기에 꽂아두기</div>
+                <div class="mission-illustration">
+                    <i class="fa-solid fa-mobile-screen"></i>
+                </div>
+                <button id="btn-complete-mission" class="btn-white">완료했어요</button>
+            </div>
+
+            <div id="mission-done" class="ui-card success-card" style="display:none;">
+                <h2>잘했어요!</h2>
+                <p>오늘의 작은 성공이에요.</p>
+                <i class="fa-solid fa-check check-icon-large"></i>
+            </div>
+
+        </main>
+
+        <!-- Bottom Nav -->
         <nav class="app-nav">
-            <button id="nav-btn-input" class="nav-item active">
-                <i class="fa-regular fa-pen-to-square nav-icon"></i>
-                <span class="nav-label">데일리 기록</span>
-            </button>
-            <button id="nav-btn-data" class="nav-item">
-                <i class="fa-solid fa-chart-pie nav-icon"></i>
-                <span class="nav-label">패턴 분석</span>
-            </button>
+            <button class="nav-item active" id="nav-btn-input">기록</button>
+            <button class="nav-item" id="nav-btn-data">분석</button>
+            <button class="nav-item" id="nav-btn-mission">미션</button>
         </nav>
 
-        <!-- Settings Modal -->
+        <!-- Settings Modal (API Key) -->
         <div id="settings-modal" class="modal-overlay">
-            <div class="glass-card modal-content">
+            <div class="modal-content">
                 <div class="modal-header">
-                    <h3><i class="fa-solid fa-gear"></i> 설정</h3>
-                    <button id="btn-close-modal" class="btn-close"><i class="fa-solid fa-xmark"></i></button>
+                    <span>API 설정</span>
+                    <button id="btn-close-modal"><i class="fa-solid fa-xmark"></i></button>
                 </div>
-                
-                <div class="settings-group">
-                    <label>Gemini API 키</label>
-                    <p class="settings-desc">실제 생성형 AI 코멘트를 활성화하려면 API 키를 입력하세요. (미입력 시 기본 코멘트 제공)</p>
-                    <div class="input-row">
-                        <input type="password" id="input-api-key" placeholder="AIZA...">
-                        <button id="btn-save-api-key" class="btn-save">저장</button>
-                    </div>
-                    <span id="api-key-status" class="status-msg"></span>
-                </div>
-
-                <div class="divider"></div>
-
-                <div class="settings-group">
-                    <label>개발 및 테스트 툴</label>
-                    <button id="btn-load-seed" class="btn-secondary" style="width:100%; justify-content:center; margin-top:10px;">
-                        <i class="fa-solid fa-wand-magic-sparkles"></i> 7일 가상 데이터 채우기
-                    </button>
-                    <button id="btn-reset-data" class="btn-danger">
-                        <i class="fa-solid fa-trash"></i> 전체 데이터 초기화
-                    </button>
-                </div>
+                <p style="font-size:0.85rem; color:#666; margin-bottom:12px;">Gemini API 키를 입력하세요.</p>
+                <input type="password" id="input-api-key" placeholder="AIZA...">
+                <button id="btn-save-api-key" class="btn-save-api">저장</button>
             </div>
         </div>
 
     </div>
-
-    <!-- Application Logic -->
     <script src="script.js"></script>
 </body>
 </html>
