@@ -429,6 +429,12 @@ input:checked + .toggle-slider:before {
     margin-bottom: 4px;
 }
 
+.grad-card .medium-text {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
 .grad-card .sub-text {
     font-size: 0.8rem;
     opacity: 0.8;

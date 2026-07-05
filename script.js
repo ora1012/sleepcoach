@@ -68,8 +68,6 @@ document.addEventListener("DOMContentLoaded", () => {
         saveMissions() {
             localStorage.setItem('sleepcoach_missions', JSON.stringify(AppState.missions));
         },
-        getApiKey() { return localStorage.getItem('sleepcoach_api_key') || ''; },
-        saveApiKey(k) { localStorage.setItem('sleepcoach_api_key', k); },
         clearAll() {
             localStorage.removeItem('sleepcoach_records');
             localStorage.removeItem('sleepcoach_missions');
@@ -97,16 +95,23 @@ document.addEventListener("DOMContentLoaded", () => {
             const avgPhone = recent.reduce((sum, r) => sum + r.phoneMinutes, 0) / count;
             const avgCondition = recent.reduce((sum, r) => sum + r.condition, 0) / count;
 
-            const patterns = [];
+            // Compute values for Rules 3 and 4
+            const sleepMins = recent.map(r => timeToMinutesContinuous(r.sleepTime));
+            const avgSleepMins = sleepMins.reduce((sum, m) => sum + m, 0) / count;
+            const variance = sleepMins.reduce((sum, m) => sum + Math.pow(m - avgSleepMins, 2), 0) / count;
+            const stdDev = Math.sqrt(variance);
+            const daySleepyRatio = recent.filter(r => r.daySleepy).length / count;
 
-            // Pattern 1: Sleep
+            const patterns = [];
+            let missionType = null;
+
+            // Rule 1: Sleep Duration
             if (avgSleep < 8.0) {
                 patterns.push(`주중에 권장보다<br><strong>${(8.0 - avgSleep).toFixed(1)}시간</strong><br>부족해요`);
-            } else {
-                patterns.push(`이번 주는<br>권장 수면시간을<br><strong>잘 채웠어요!</strong>`);
+                if (!missionType) missionType = 'sleep_short';
             }
 
-            // Pattern 2: Phone/Condition
+            // Rule 2: Phone Usage / Condition
             const phoneArr = recent.map(r => r.phoneMinutes).sort((a,b)=>a-b);
             const medianPhone = phoneArr[Math.floor(count/2)];
             const highPhone = recent.filter(r => r.phoneMinutes > medianPhone);
@@ -117,55 +122,117 @@ document.addEventListener("DOMContentLoaded", () => {
                 const condL = lowPhone.reduce((sum, r) => sum + r.condition, 0) / lowPhone.length;
                 if (condL - condH >= 1.0) {
                     patterns.push(`폰 사용이<br><strong>${medianPhone}분</strong> 넘은 날엔<br>컨디션이 낮았어요`);
-                } else {
-                    patterns.push(`스마트폰 사용이<br>컨디션에 큰<br>영향을 주지 않았어요`);
+                    if (!missionType) missionType = 'phone_high';
                 }
-            } else {
-                patterns.push(`폰 사용 시간이<br><strong>일정하게</strong><br>유지되고 있어요`);
             }
 
-            // Mission Selection
-            let missionType = 'positive';
-            if (avgSleep < 8.0) missionType = 'sleep_short';
-            else if (avgPhone > 60) missionType = 'phone_high';
+            // Rule 3: Irregular sleep
+            if (stdDev >= 60) {
+                patterns.push(`자는 시간이<br>매일 <strong>들쭉날쭉해요</strong>`);
+                if (!missionType) missionType = 'sleep_irregular';
+            }
+
+            // Rule 4: Day sleepy
+            if (daySleepyRatio >= 0.5) {
+                patterns.push(`이번 주 <strong>절반 이상</strong><br>낮에 졸렸어요`);
+                if (!missionType) missionType = 'day_sleepy';
+            }
+            
+            // Add positive patterns if we don't have enough patterns
+            if (patterns.length === 0) {
+                patterns.push(`이번 주는<br>권장 수면시간을<br><strong>잘 채웠어요!</strong>`);
+                patterns.push(`폰 사용 시간이<br><strong>일정하게</strong><br>유지되고 있어요`);
+            } else if (patterns.length === 1) {
+                if (avgSleep >= 8.0) patterns.push(`이번 주는<br>권장 수면시간을<br><strong>잘 채웠어요!</strong>`);
+                else patterns.push(`폰 사용 시간이<br><strong>일정하게</strong><br>유지되고 있어요`);
+            }
+
+            const score = this.calculateScore(recent);
 
             return {
                 avgSleep: avgSleep,
                 avgPhone: avgPhone,
                 avgCondition: avgCondition,
                 patterns: patterns.slice(0, 2),
-                missionType: missionType
+                missionType: missionType || 'positive',
+                score: score
             };
+        },
+
+        calculateScore(recent) {
+            const count = recent.length;
+            const avgSleep = recent.reduce((sum, r) => sum + r.sleepHours, 0) / count;
+            const avgPhone = recent.reduce((sum, r) => sum + r.phoneMinutes, 0) / count;
+            
+            // Regularity (Std Dev of sleep time)
+            const sleepMins = recent.map(r => timeToMinutesContinuous(r.sleepTime));
+            const avgSleepMins = sleepMins.reduce((sum, m) => sum + m, 0) / count;
+            const variance = sleepMins.reduce((sum, m) => sum + Math.pow(m - avgSleepMins, 2), 0) / count;
+            const stdDev = Math.sqrt(variance);
+            
+            // 1. Sleep Duration (Max 40)
+            let sleepScore = 0;
+            if (avgSleep >= 8.0) sleepScore = 40;
+            else if (avgSleep >= 7.0) sleepScore = 35;
+            else if (avgSleep >= 6.0) sleepScore = 30;
+            else if (avgSleep >= 5.0) sleepScore = 20;
+            else sleepScore = 10;
+            
+            // 2. Regularity (Max 30)
+            let regScore = 0;
+            if (stdDev <= 60) regScore = 30;
+            else if (stdDev <= 120) regScore = 25;
+            else if (stdDev <= 180) regScore = 15;
+            else regScore = 10;
+            
+            // 3. Phone Usage (Max 30)
+            let phoneScore = 0;
+            if (avgPhone <= 30) phoneScore = 30;
+            else if (avgPhone <= 60) phoneScore = 25;
+            else if (avgPhone <= 120) phoneScore = 15;
+            else phoneScore = 10;
+            
+            return sleepScore + regScore + phoneScore;
         },
 
         getMissionText(type) {
             const map = {
                 sleep_short: "오늘은 평소보다 30분 일찍 누워보기",
                 phone_high: "오늘은 11시 전에 폰을 충전기에 꽂아두기",
+                sleep_irregular: "오늘은 어제와 같은 시각에 누워보기",
+                day_sleepy: "점심 후 10분 가벼운 산책하기",
                 positive: "오늘도 이대로 푹 자기! 가벼운 스트레칭 추천해요"
             };
             return map[type] || map.positive;
         },
 
         async getAiComment(result) {
-            const key = StorageDB.getApiKey();
-            if (key) {
-                try {
-                    const info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
-                    const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘: ${info}`;
-                    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${key}`, {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
-                    });
-                    if (!res.ok) throw new Error("API Failed");
-                    const data = await res.json();
-                    return data.candidates[0].content.parts[0].text.trim();
-                } catch (e) {
-                    console.error(e);
+            try {
+                const info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
+                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘: ${info}`;
+                
+                // Cloudflare Worker API Endpoint
+                const workerUrl = "https://sleepcoach.ora111012.workers.dev/"; 
+                
+                const res = await fetch(workerUrl, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+                
+                if (!res.ok) throw new Error("Worker API Failed");
+                const data = await res.json();
+                
+                if (data.comment) {
+                    return data.comment;
+                } else {
+                    throw new Error("No comment in response");
                 }
+            } catch (e) {
+                console.error("AI Comment Fetch Error:", e);
+                // Fallback comment
+                return `요즘 조금 늦게 자는 날이 많았네요. 오늘은 완벽하게 하려고 하기보다, 폰을 10분만 일찍 내려놓는 것부터 해봐요. 그 정도면 충분히 잘하고 있어요.`;
             }
-            return `요즘 조금 늦게 자는 날이 많았네요. 오늘은 완벽하게 하려고 하기보다, 폰을 10분만 일찍 내려놓는 것부터 해봐요. 그 정도면 충분히 잘하고 있어요.`;
         }
     };
 
@@ -295,6 +362,10 @@ document.addEventListener("DOMContentLoaded", () => {
             const res = Analyzer.analyze(recs);
             const hrs = Math.floor(res.avgSleep);
             const mins = Math.round((res.avgSleep - hrs) * 60);
+            
+            const scoreEl = document.getElementById('stat-sleep-score');
+            if(scoreEl) scoreEl.textContent = `${res.score}점`;
+            
             this.els.statAvgSleep.innerHTML = `${hrs}시간 ${mins > 0 ? mins+'분' : ''}`;
 
             this.els.patternsList.innerHTML = '';
@@ -371,11 +442,24 @@ document.addEventListener("DOMContentLoaded", () => {
             // Form Submit
             this.els.form.addEventListener('submit', (e) => {
                 e.preventDefault();
-                const sh = calculateSleepHours(this.els.inSleep.value, this.els.inWake.value);
+                
+                const sleepVal = this.els.inSleep.value;
+                const wakeVal = this.els.inWake.value;
+                
+                if (sleepVal === wakeVal) {
+                    if (!confirm("수면 시간과 기상 시간이 같습니다. 정말 저장하시겠습니까?")) return;
+                }
+                
+                const sh = calculateSleepHours(sleepVal, wakeVal);
+                
+                if (sh > 14) {
+                    if (!confirm(`수면 시간이 ${sh}시간으로 너무 깁니다. 정말 저장하시겠습니까?`)) return;
+                }
+                
                 const rec = {
                     date: AppState.todayDateStr,
-                    sleepTime: this.els.inSleep.value,
-                    wakeTime: this.els.inWake.value,
+                    sleepTime: sleepVal,
+                    wakeTime: wakeVal,
                     sleepHours: sh,
                     phoneMinutes: Number(this.els.inPhone.value),
                     condition: AppState.selectedCondition,
@@ -410,20 +494,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 if(!this.els.btnSettings.contains(e.target) && !this.els.bubble.contains(e.target)) {
                     this.els.bubble.classList.remove('active');
                 }
-            });
-
-            // API Modal
-            const modal = document.getElementById('settings-modal');
-            document.getElementById('btn-open-api').addEventListener('click', () => {
-                document.getElementById('input-api-key').value = StorageDB.getApiKey();
-                modal.classList.add('active');
-                this.els.bubble.classList.remove('active');
-            });
-            document.getElementById('btn-close-modal').addEventListener('click', () => modal.classList.remove('active'));
-            document.getElementById('btn-save-api-key').addEventListener('click', () => {
-                StorageDB.saveApiKey(document.getElementById('input-api-key').value.trim());
-                localStorage.removeItem(`sc_comment_${AppState.todayDateStr}`);
-                modal.classList.remove('active');
             });
 
             // Reset
