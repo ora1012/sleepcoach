@@ -13,6 +13,18 @@
         <!-- Header -->
         <header class="top-header">
             <div class="date-badge" id="current-date">2024년 6월 20일</div>
+            
+            <div id="auth-container" style="display:flex; align-items:center; gap:8px; margin-left:auto; margin-right: 12px;">
+                <button id="btn-google-login" style="padding: 6px 12px; border-radius: 20px; border: none; background-color: #f1f5f9; font-size: 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                    <i class="fa-brands fa-google"></i> 구글 로그인
+                </button>
+                <div id="user-profile" style="display:none; align-items:center; gap: 6px;">
+                    <img id="user-avatar" src="" alt="avatar" style="width:24px; height:24px; border-radius:50%;">
+                    <span id="user-name" style="font-size:0.85rem; font-weight:600;"></span>
+                    <button id="btn-logout" style="padding: 4px 8px; border-radius: 12px; border: 1px solid #e2e8f0; background: transparent; font-size: 0.75rem; cursor: pointer;">로그아웃</button>
+                </div>
+            </div>
+
             <button class="settings-btn" id="btn-settings-toggle">
                 <i class="fa-solid fa-gear"></i>
             </button>
@@ -151,6 +163,7 @@
         </nav>
 
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>

@@ -4,6 +4,13 @@
 
 document.addEventListener("DOMContentLoaded", () => {
     // =========================================================================
+    // 0. SUPABASE INIT
+    // =========================================================================
+    const SUPABASE_URL = 'https://pevjwlvhstuphslkrssb.supabase.co/';
+    const SUPABASE_ANON_KEY = 'sb_publishable_fd51vxRm6rfwg724h3CqVA_L1LqI30y';
+    const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+    // =========================================================================
     // 1. STATE MANAGEMENT
     // =========================================================================
     const AppState = {
@@ -264,6 +271,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 'view-mission': document.getElementById('view-mission')
             },
 
+            // Auth elements
+            btnGoogleLogin: document.getElementById('btn-google-login'),
+            btnLogout: document.getElementById('btn-logout'),
+            userProfile: document.getElementById('user-profile'),
+            userName: document.getElementById('user-name'),
+            userAvatar: document.getElementById('user-avatar'),
+
             // Settings
             btnSettings: document.getElementById('btn-settings-toggle'),
             bubble: document.getElementById('settings-bubble'),
@@ -422,6 +436,23 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         bindEvents() {
+            // Auth Events
+            if (this.els.btnGoogleLogin) {
+                this.els.btnGoogleLogin.addEventListener('click', async () => {
+                    const { data, error } = await supabase.auth.signInWithOAuth({
+                        provider: 'google',
+                    });
+                    if (error) console.error("Login error:", error.message);
+                });
+            }
+
+            if (this.els.btnLogout) {
+                this.els.btnLogout.addEventListener('click', async () => {
+                    const { error } = await supabase.auth.signOut();
+                    if (error) console.error("Logout error:", error.message);
+                });
+            }
+
             // Nav
             this.els.navBtns['view-input'].addEventListener('click', () => this.switchView('view-input'));
             this.els.navBtns['view-analysis'].addEventListener('click', () => this.switchView('view-analysis'));
@@ -507,6 +538,25 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     };
+
+    // Auth State change listener
+    supabase.auth.onAuthStateChange((event, session) => {
+        if (session && session.user) {
+            UI.els.btnGoogleLogin.style.display = 'none';
+            UI.els.userProfile.style.display = 'flex';
+            UI.els.userName.textContent = session.user.user_metadata.full_name || session.user.email.split('@')[0];
+            if (session.user.user_metadata.avatar_url) {
+                UI.els.userAvatar.src = session.user.user_metadata.avatar_url;
+            } else {
+                UI.els.userAvatar.src = 'https://via.placeholder.com/24';
+            }
+        } else {
+            UI.els.btnGoogleLogin.style.display = 'flex';
+            UI.els.userProfile.style.display = 'none';
+            UI.els.userName.textContent = '';
+            UI.els.userAvatar.src = '';
+        }
+    });
 
     // Bootstrap
     StorageDB.loadAll();
