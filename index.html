@@ -159,11 +159,56 @@
 
         </main>
 
+        <!-- VIEW 4: CALENDAR -->
+        <main class="app-view" id="view-calendar">
+            <div class="calendar-header" style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px; padding: 0 8px; color: var(--text-main);">
+                <button id="btn-prev-month" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color: var(--text-main);"><i class="fa-solid fa-chevron-left"></i></button>
+                <h2 id="calendar-month-title" style="margin:0; font-size:1.2rem; font-weight:700;">2026년 7월</h2>
+                <button id="btn-next-month" style="background:none; border:none; font-size:1.2rem; cursor:pointer; color: var(--text-main);"><i class="fa-solid fa-chevron-right"></i></button>
+            </div>
+            
+            <div class="calendar-container calendar-card" style="padding: 20px;">
+                <div class="calendar-days" style="display:grid; grid-template-columns:repeat(7, 1fr); text-align:center; font-size:0.8rem; color:#a0a2b1; margin-bottom:12px; font-weight:600;">
+                    <div style="color:#ef4444;">일</div><div>월</div><div>화</div><div>수</div><div>목</div><div>금</div><div style="color:#6592ff;">토</div>
+                </div>
+                <div class="calendar-grid" id="calendar-grid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:8px;">
+                    <!-- Injected by JS -->
+                </div>
+                
+                <div class="calendar-legend" style="display:flex; justify-content:center; gap:12px; margin-top:20px; font-size:0.75rem; color:var(--text-sub);">
+                    <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:3px; background-color:#2b2c3a;"></span>기록없음</span>
+                    <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:3px; background-color:#9a7bff;"></span>부족</span>
+                    <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:3px; background-color:#6592ff;"></span>보통</span>
+                    <span style="display:flex; align-items:center; gap:4px;"><span style="width:10px; height:10px; border-radius:3px; background-color:#4850ff;"></span>충분</span>
+                </div>
+            </div>
+
+            <!-- 달력 클릭 시 상세 정보 패널 -->
+            <div id="calendar-detail-panel" class="calendar-card" style="display:none; margin-top: 16px; padding: 20px;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
+                    <h3 id="cal-detail-date" style="margin:0; font-size: 1.1rem;">7월 26일</h3>
+                    <span id="cal-detail-condition" style="font-size:1.5rem;">😄</span>
+                </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom: 8px;">
+                    <span class="sub-text">수면 시간</span>
+                    <span class="medium-text" id="cal-detail-sleep">00:00 ~ 00:00 (0시간)</span>
+                </div>
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="sub-text">자기 전 폰</span>
+                    <span class="medium-text" id="cal-detail-phone">0분</span>
+                </div>
+                <div style="text-align:center; margin-top:16px;">
+                    <button id="btn-edit-cal-record" class="btn-submit" style="padding: 10px 16px; font-size: 0.9rem;">기록 수정하기</button>
+                </div>
+            </div>
+        </main>
+
         <!-- Bottom Nav -->
         <nav class="app-nav">
             <button class="nav-item active" id="nav-btn-input">기록</button>
             <button class="nav-item" id="nav-btn-data">분석</button>
             <button class="nav-item" id="nav-btn-mission">미션</button>
+            <button class="nav-item" id="nav-btn-calendar">달력</button>
         </nav>
 
     </div>

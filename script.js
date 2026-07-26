@@ -17,6 +17,8 @@ document.addEventListener("DOMContentLoaded", () => {
         currentView: 'view-input',
         todayDateStr: getLocalDateString(),
         selectedDateStr: getLocalDateString(),
+        calendarYear: new Date().getFullYear(),
+        calendarMonth: new Date().getMonth() + 1,
         records: [],
         missions: [],
         selectedCondition: null,
@@ -321,13 +323,15 @@ document.addEventListener("DOMContentLoaded", () => {
             navBtns: {
                 'view-input': document.getElementById('nav-btn-input'),
                 'view-analysis': document.getElementById('nav-btn-data'),
-                'view-mission': document.getElementById('nav-btn-mission')
+                'view-mission': document.getElementById('nav-btn-mission'),
+                'view-calendar': document.getElementById('nav-btn-calendar')
             },
             
             views: {
                 'view-input': document.getElementById('view-input'),
                 'view-analysis': document.getElementById('view-analysis'),
-                'view-mission': document.getElementById('view-mission')
+                'view-mission': document.getElementById('view-mission'),
+                'view-calendar': document.getElementById('view-calendar')
             },
 
             // Auth elements
@@ -340,6 +344,18 @@ document.addEventListener("DOMContentLoaded", () => {
             // Settings
             btnSettings: document.getElementById('btn-settings-toggle'),
             bubble: document.getElementById('settings-bubble'),
+
+            // Calendar
+            btnPrevMonth: document.getElementById('btn-prev-month'),
+            btnNextMonth: document.getElementById('btn-next-month'),
+            calMonthTitle: document.getElementById('calendar-month-title'),
+            calGrid: document.getElementById('calendar-grid'),
+            calDetailPanel: document.getElementById('calendar-detail-panel'),
+            calDetailDate: document.getElementById('cal-detail-date'),
+            calDetailCond: document.getElementById('cal-detail-condition'),
+            calDetailSleep: document.getElementById('cal-detail-sleep'),
+            calDetailPhone: document.getElementById('cal-detail-phone'),
+            btnEditCalRec: document.getElementById('btn-edit-cal-record'),
 
             // Analysis
             analysisLocked: document.getElementById('analysis-locked'),
@@ -376,6 +392,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (target === 'view-input') this.updateInputView();
             if (target === 'view-analysis') this.updateAnalysisView();
             if (target === 'view-mission') this.updateMissionView();
+            if (target === 'view-calendar') this.renderCalendar();
         },
 
         updateInputView() {
@@ -498,6 +515,78 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
 
+        renderCalendar() {
+            this.els.calMonthTitle.textContent = `${AppState.calendarYear}년 ${AppState.calendarMonth}월`;
+            this.els.calDetailPanel.style.display = 'none';
+
+            const year = AppState.calendarYear;
+            const month = AppState.calendarMonth;
+
+            const firstDay = new Date(year, month - 1, 1).getDay();
+            const daysInMonth = new Date(year, month, 0).getDate();
+
+            this.els.calGrid.innerHTML = '';
+            
+            for (let i = 0; i < firstDay; i++) {
+                this.els.calGrid.innerHTML += `<div></div>`;
+            }
+
+            const today = new Date();
+            const isCurrentMonth = today.getFullYear() === year && (today.getMonth() + 1) === month;
+            const todayDate = today.getDate();
+
+            for (let i = 1; i <= daysInMonth; i++) {
+                const dStr = `${year}-${String(month).padStart(2, '0')}-${String(i).padStart(2, '0')}`;
+                const exist = AppState.records.find(r => r.date === dStr);
+                
+                let stateClass = 'cal-state-empty';
+                if (exist) {
+                    if (exist.sleepHours < 6) stateClass = 'cal-state-low';
+                    else if (exist.sleepHours < 7.5) stateClass = 'cal-state-mid';
+                    else stateClass = 'cal-state-high';
+                }
+
+                let todayClass = (isCurrentMonth && i === todayDate) ? 'today' : '';
+                
+                const cell = document.createElement('div');
+                cell.className = `calendar-cell ${stateClass} ${todayClass}`;
+                cell.textContent = i;
+                cell.dataset.date = dStr;
+                
+                cell.addEventListener('click', () => {
+                    this.els.calGrid.querySelectorAll('.calendar-cell').forEach(el => el.classList.remove('selected'));
+                    cell.classList.add('selected');
+
+                    if (exist) {
+                        this.showCalendarDetail(exist);
+                    } else {
+                        if (dStr > getLocalDateString()) {
+                            alert("미래 날짜는 기록할 수 없습니다.");
+                            return;
+                        }
+                        AppState.selectedDateStr = dStr;
+                        this.switchView('view-input');
+                    }
+                });
+
+                this.els.calGrid.appendChild(cell);
+            }
+        },
+
+        showCalendarDetail(rec) {
+            this.els.calDetailPanel.style.display = 'block';
+            this.els.calDetailDate.textContent = formatKoreanDate(rec.date);
+            const emojiMap = {1:'😳', 2:'😐', 3:'🙂', 4:'😄', 5:'🤩'};
+            this.els.calDetailCond.textContent = emojiMap[rec.condition] || '😐';
+            this.els.calDetailSleep.textContent = `${rec.sleepTime} ~ ${rec.wakeTime} (${rec.sleepHours}시간)`;
+            this.els.calDetailPhone.textContent = `${rec.phoneMinutes}분`;
+            
+            this.els.btnEditCalRec.onclick = () => {
+                AppState.selectedDateStr = rec.date;
+                this.switchView('view-input');
+            };
+        },
+
         bindEvents() {
             // Auth Events
             if (this.els.btnGoogleLogin) {
@@ -523,6 +612,27 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.navBtns['view-input'].addEventListener('click', () => this.switchView('view-input'));
             this.els.navBtns['view-analysis'].addEventListener('click', () => this.switchView('view-analysis'));
             this.els.navBtns['view-mission'].addEventListener('click', () => this.switchView('view-mission'));
+            this.els.navBtns['view-calendar'].addEventListener('click', () => this.switchView('view-calendar'));
+
+            // Calendar Navigation
+            if (this.els.btnPrevMonth) {
+                this.els.btnPrevMonth.addEventListener('click', () => {
+                    AppState.calendarMonth--;
+                    if (AppState.calendarMonth < 1) {
+                        AppState.calendarMonth = 12;
+                        AppState.calendarYear--;
+                    }
+                    this.renderCalendar();
+                });
+                this.els.btnNextMonth.addEventListener('click', () => {
+                    AppState.calendarMonth++;
+                    if (AppState.calendarMonth > 12) {
+                        AppState.calendarMonth = 1;
+                        AppState.calendarYear++;
+                    }
+                    this.renderCalendar();
+                });
+            }
 
             // Date Picker
             if (this.els.datePicker) {
