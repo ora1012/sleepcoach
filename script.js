@@ -16,10 +16,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const AppState = {
         currentView: 'view-input',
         todayDateStr: getLocalDateString(),
+        selectedDateStr: getLocalDateString(),
         records: [],
         missions: [],
         selectedCondition: null,
-        isEditMode: false
+        isEditMode: false,
+        isLoggedIn: false
     };
 
     // =========================================================================
@@ -85,6 +87,62 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (k && k.startsWith("sc_comment_")) {
                     localStorage.removeItem(k);
                     i--;
+                }
+            }
+        }
+    };
+
+    const DBService = {
+        toSnake(r) {
+            return {
+                date: r.date,
+                sleep_time: r.sleepTime,
+                wake_time: r.wakeTime,
+                sleep_hours: r.sleepHours,
+                phone_minutes: r.phoneMinutes,
+                condition: r.condition,
+                day_sleepy: r.daySleepy ? 1 : 0
+            };
+        },
+        toCamel(r) {
+            return {
+                date: r.date,
+                sleepTime: r.sleep_time,
+                wakeTime: r.wake_time,
+                sleepHours: r.sleep_hours,
+                phoneMinutes: r.phone_minutes,
+                condition: r.condition,
+                daySleepy: r.day_sleepy === 1
+            };
+        },
+        async loadRecords() {
+            const { data, error } = await supabase.from('records').select('*');
+            if (!error && data) {
+                AppState.records = data.map(this.toCamel);
+            }
+        },
+        async saveRecord(rec) {
+            const { error } = await supabase
+                .from('records')
+                .upsert([this.toSnake(rec)], { onConflict: 'user_id,date' });
+            if (error) console.error("Supabase Save error:", error);
+        },
+        async migrateLocalRecords() {
+            const localRaw = localStorage.getItem('sleepcoach_records');
+            if (localRaw) {
+                const localRecs = JSON.parse(localRaw);
+                if (localRecs && localRecs.length > 0) {
+                    if (confirm(`로컬에 저장된 ${localRecs.length}개의 기록이 있습니다. 계정으로 이전하시겠습니까?`)) {
+                        const { error } = await supabase
+                            .from('records')
+                            .upsert(localRecs.map(r => this.toSnake(r)), { onConflict: 'user_id,date' });
+                        if (!error) {
+                            localStorage.removeItem('sleepcoach_records');
+                            alert('이전이 완료되었습니다.');
+                        } else {
+                            console.error("Migration error:", error);
+                        }
+                    }
                 }
             }
         }
@@ -249,6 +307,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const UI = {
         els: {
             dateBadge: document.getElementById('current-date'),
+            datePicker: document.getElementById('date-picker'),
             form: document.getElementById('sleep-form'),
             inSleep: document.getElementById('input-sleep-time'),
             inWake: document.getElementById('input-wake-time'),
@@ -320,8 +379,12 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         updateInputView() {
-            this.els.dateBadge.textContent = formatKoreanDate(AppState.todayDateStr);
-            const exist = AppState.records.find(r => r.date === AppState.todayDateStr);
+            this.els.dateBadge.textContent = formatKoreanDate(AppState.selectedDateStr);
+            if (this.els.datePicker) {
+                this.els.datePicker.value = AppState.selectedDateStr;
+                this.els.datePicker.max = getLocalDateString();
+            }
+            const exist = AppState.records.find(r => r.date === AppState.selectedDateStr);
             
             if (exist) {
                 AppState.isEditMode = true;
@@ -461,6 +524,32 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.navBtns['view-analysis'].addEventListener('click', () => this.switchView('view-analysis'));
             this.els.navBtns['view-mission'].addEventListener('click', () => this.switchView('view-mission'));
 
+            // Date Picker
+            if (this.els.datePicker) {
+                // 투명한 input을 클릭했을 때 어디를 누르든(텍스트 부분 포함) 강제로 달력 팝업 띄우기
+                this.els.datePicker.addEventListener('click', (e) => {
+                    try {
+                        if (e.target.showPicker) e.target.showPicker();
+                    } catch (err) {
+                        // 이미 열려있거나 지원하지 않는 경우 무시
+                    }
+                });
+
+                this.els.datePicker.addEventListener('change', (e) => {
+                    const selected = e.target.value;
+                    if (!selected) return; // 날짜 선택 취소 시 무시
+
+                    const today = getLocalDateString();
+                    if (selected > today) {
+                        alert("미래 날짜는 선택할 수 없습니다.");
+                        e.target.value = AppState.selectedDateStr;
+                        return;
+                    }
+                    AppState.selectedDateStr = selected;
+                    this.updateInputView();
+                });
+            }
+
             // Slider
             this.els.inPhone.addEventListener('input', () => this.updateSliderUI());
 
@@ -474,7 +563,7 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // Form Submit
-            this.els.form.addEventListener('submit', (e) => {
+            this.els.form.addEventListener('submit', async (e) => {
                 e.preventDefault();
                 
                 const sleepVal = this.els.inSleep.value;
@@ -491,7 +580,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 const rec = {
-                    date: AppState.todayDateStr,
+                    date: AppState.selectedDateStr,
                     sleepTime: sleepVal,
                     wakeTime: wakeVal,
                     sleepHours: sh,
@@ -504,7 +593,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (idx >= 0) AppState.records[idx] = rec;
                 else AppState.records.push(rec);
 
-                StorageDB.saveRecords();
+                if (AppState.isLoggedIn) {
+                    await DBService.saveRecord(rec);
+                } else {
+                    StorageDB.saveRecords();
+                }
                 localStorage.removeItem(`sc_comment_${rec.date}`);
                 
                 this.switchView('view-analysis');
@@ -531,8 +624,11 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // Reset
-            document.getElementById('btn-reset-data').addEventListener('click', () => {
+            document.getElementById('btn-reset-data').addEventListener('click', async () => {
                 if(confirm('전체 데이터를 삭제하시겠습니까?')) {
+                    if (AppState.isLoggedIn) {
+                        await supabase.from('records').delete().neq('date', '');
+                    }
                     StorageDB.clearAll();
                     this.els.bubble.classList.remove('active');
                     this.updateInputView();
@@ -543,8 +639,9 @@ document.addEventListener("DOMContentLoaded", () => {
     };
 
     // Auth State change listener
-    supabase.auth.onAuthStateChange((event, session) => {
+    supabase.auth.onAuthStateChange(async (event, session) => {
         if (session && session.user) {
+            AppState.isLoggedIn = true;
             UI.els.btnGoogleLogin.style.display = 'none';
             UI.els.userProfile.style.display = 'flex';
             UI.els.userName.textContent = session.user.user_metadata.full_name || session.user.email.split('@')[0];
@@ -553,11 +650,24 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 UI.els.userAvatar.src = 'https://via.placeholder.com/24';
             }
+            
+            // 로그인 세션 초기 로드 시
+            if (event === 'SIGNED_IN' || event === 'INITIAL_SESSION') {
+                await DBService.migrateLocalRecords();
+                await DBService.loadRecords();
+                UI.updateInputView();
+                if (AppState.currentView === 'view-analysis') UI.updateAnalysisView();
+            }
         } else {
+            AppState.isLoggedIn = false;
             UI.els.btnGoogleLogin.style.display = 'flex';
             UI.els.userProfile.style.display = 'none';
             UI.els.userName.textContent = '';
             UI.els.userAvatar.src = '';
+            
+            // 비로그인 상태면 로컬 데이터 불러오기
+            StorageDB.loadAll();
+            UI.updateInputView();
         }
     });
 
