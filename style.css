@@ -141,7 +141,7 @@ body {
     padding: 12px 20px;
     text-align: left;
     font-size: 0.9rem;
-    font-weight: 580;
+    font-weight: 600;
     color: var(--text-card-main);
     cursor: pointer;
     z-index: 1;
