@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         async getAiComment(result) {
             try {
                 const info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
-                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘 (매번 조금씩 다른 표현으로 말해줘): ${info}`;
+                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘 (매번 조금씩 다른 표현으로 말해줘, id:${Math.random().toString().slice(2,6)}): ${info}`;
                 
                 // Cloudflare Worker API Endpoint
                 const workerUrl = "https://sleepcoach.ora111012.workers.dev/"; 
@@ -297,8 +297,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             } catch (e) {
                 console.error("AI Comment Fetch Error:", e);
-                // Fallback comment
-                return `요즘 조금 늦게 자는 날이 많았네요. 오늘은 완벽하게 하려고 하기보다, 폰을 10분만 일찍 내려놓는 것부터 해봐요. 그 정도면 충분히 잘하고 있어요.`;
+                // Fallback comments
+                const fallbacks = [
+                    "요즘 조금 늦게 자는 날이 많았네요. 오늘은 완벽하게 하려고 하기보다, 폰을 10분만 일찍 내려놓는 것부터 해봐요. 그 정도면 충분히 잘하고 있어요.",
+                    "하루의 피로를 푸는 데는 수면이 최고예요! 오늘은 평소보다 조금만 더 일찍 눈을 감아볼까요?",
+                    "규칙적인 수면 패턴을 만들어가는 중이군요. 폰 사용을 조금 줄이면 더 깊은 잠을 잘 수 있을 거예요."
+                ];
+                return fallbacks[Math.floor(Math.random() * fallbacks.length)];
             }
         }
     };
