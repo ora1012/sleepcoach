@@ -628,7 +628,13 @@ document.addEventListener("DOMContentLoaded", () => {
             // Refresh AI Comment
             if (this.els.btnRefreshComment) {
                 this.els.btnRefreshComment.addEventListener('click', () => {
-                    localStorage.removeItem(`sc_comment_${AppState.todayDateStr}`);
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const k = localStorage.key(i);
+                        if (k && k.startsWith("sc_comment_")) {
+                            localStorage.removeItem(k);
+                            i--; // 항목이 삭제되었으므로 인덱스 보정
+                        }
+                    }
                     this.updateAnalysisView();
                 });
             }
@@ -728,11 +734,13 @@ document.addEventListener("DOMContentLoaded", () => {
                     StorageDB.saveRecords();
                 }
                 
-                // 해당 기록 날짜의 코멘트 캐시 삭제
-                localStorage.removeItem(`sc_comment_${rec.date}`);
-                // 어떤 날짜의 기록을 수정하든 '오늘'의 AI 코멘트 캐시도 지워서 분석 화면에서 새로고침되도록 함
-                if (rec.date !== AppState.todayDateStr) {
-                    localStorage.removeItem(`sc_comment_${AppState.todayDateStr}`);
+                // 어떤 날짜의 기록이든 수정/저장 시, 기존 캐시(오늘 포함)를 전부 날려서 가장 최신 분석을 받도록 강제
+                for (let i = 0; i < localStorage.length; i++) {
+                    const k = localStorage.key(i);
+                    if (k && k.startsWith("sc_comment_")) {
+                        localStorage.removeItem(k);
+                        i--; // 항목이 삭제되었으므로 인덱스 보정
+                    }
                 }
                 
                 this.switchView('view-analysis');
