@@ -284,7 +284,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 const res = await fetch(workerUrl, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ prompt: prompt })
+                    body: JSON.stringify({ prompt: prompt }),
+                    cache: "no-store"
                 });
                 
                 if (!res.ok) throw new Error("Worker API Failed");
@@ -483,8 +484,12 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!todayMiss) {
                 todayMiss = { date: AppState.todayDateStr, type: res.missionType, text: mText, done: false };
                 AppState.missions.push(todayMiss);
-                StorageDB.saveMissions();
+            } else if (!todayMiss.done) {
+                // 분석 데이터가 바뀌면 아직 완료하지 않은 오늘의 미션 내용도 업데이트
+                todayMiss.type = res.missionType;
+                todayMiss.text = mText;
             }
+            StorageDB.saveMissions();
 
             // AI Comment Cache
             const cKey = `sc_comment_${AppState.todayDateStr}`;
