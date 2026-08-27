@@ -276,7 +276,7 @@ document.addEventListener("DOMContentLoaded", () => {
         async getAiComment(result) {
             try {
                 const info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
-                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘: ${info}`;
+                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘 (매번 조금씩 다른 표현으로 말해줘): ${info}`;
                 
                 // Cloudflare Worker API Endpoint
                 const workerUrl = "https://sleepcoach.ora111012.workers.dev/"; 
@@ -364,6 +364,7 @@ document.addEventListener("DOMContentLoaded", () => {
             statAvgSleep: document.getElementById('stat-avg-sleep'),
             patternsList: document.getElementById('patterns-list'),
             aiComment: document.getElementById('ai-comment-text'),
+            btnRefreshComment: document.getElementById('btn-refresh-comment'),
 
             // Mission
             missionActive: document.getElementById('mission-active'),
@@ -614,6 +615,14 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.navBtns['view-mission'].addEventListener('click', () => this.switchView('view-mission'));
             this.els.navBtns['view-calendar'].addEventListener('click', () => this.switchView('view-calendar'));
 
+            // Refresh AI Comment
+            if (this.els.btnRefreshComment) {
+                this.els.btnRefreshComment.addEventListener('click', () => {
+                    localStorage.removeItem(`sc_comment_${AppState.todayDateStr}`);
+                    this.updateAnalysisView();
+                });
+            }
+
             // Calendar Navigation
             if (this.els.btnPrevMonth) {
                 this.els.btnPrevMonth.addEventListener('click', () => {
@@ -708,7 +717,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 } else {
                     StorageDB.saveRecords();
                 }
+                
+                // 해당 기록 날짜의 코멘트 캐시 삭제
                 localStorage.removeItem(`sc_comment_${rec.date}`);
+                // 어떤 날짜의 기록을 수정하든 '오늘'의 AI 코멘트 캐시도 지워서 분석 화면에서 새로고침되도록 함
+                if (rec.date !== AppState.todayDateStr) {
+                    localStorage.removeItem(`sc_comment_${AppState.todayDateStr}`);
+                }
                 
                 this.switchView('view-analysis');
             });
