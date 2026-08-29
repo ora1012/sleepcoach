@@ -220,17 +220,17 @@ body {
     flex: 1;
     background: var(--card-white);
     border-radius: var(--radius-card);
-    padding: 16px 8px;
+    padding: 20px 16px;
     text-align: center;
     box-shadow: var(--shadow-card);
 }
 
 .time-card label {
     display: block;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-card-main);
-    margin-bottom: 8px;
+    margin-bottom: 12px;
 }
 
 .time-input-styled {
@@ -239,13 +239,13 @@ body {
     justify-content: center;
     background: #f5f6fa;
     border-radius: 12px;
-    padding: 6px;
+    padding: 10px;
 }
 
 .time-input-styled input {
     border: none;
     background: transparent;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     font-weight: 700;
     color: var(--text-card-main);
     width: 100%;
