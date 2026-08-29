@@ -69,6 +69,7 @@ body {
     position: relative;
     padding-bottom: 90px; /* Space for bottom nav */
     overflow-x: hidden;
+    max-width: 100vw; /* Prevent container from expanding beyond screen */
 }
 
 /* ========================================================
@@ -223,6 +224,7 @@ body {
     padding: 20px 16px;
     text-align: center;
     box-shadow: var(--shadow-card);
+    min-width: 0; /* flex 자식 요소가 부모 너비를 넘지 않도록 강제 축소 */
 }
 
 .time-card label {
