@@ -25,10 +25,10 @@ export default {
         return new Response('Prompt is required', { status: 400, headers: corsHeaders });
       }
 
-      // 4. Call Gemini 2.5 Flash API
+      // 4. Call Gemini 1.5 Flash API
       // env.GEMINI_API_KEY must be set in Cloudflare Workers settings
       const apiKey = env.GEMINI_API_KEY; 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
 
       const geminiResponse = await fetch(geminiUrl, {
         method: 'POST',
