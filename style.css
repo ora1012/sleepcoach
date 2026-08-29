@@ -212,7 +212,7 @@ body {
 /* Form Layouts (Record View) */
 .time-cards-row {
     display: flex;
-    gap: 16px;
+    gap: 8px;
     margin-bottom: 16px;
 }
 
@@ -698,7 +698,7 @@ input:checked + .toggle-slider:before {
 @media (max-width: 400px) {
     .app-view { padding: 0 16px 20px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
     .ui-card { padding: 16px; max-width: 100%; box-sizing: border-box; }
-    .time-cards-row { gap: 10px; }
+    .time-cards-row { gap: 6px; }
     .time-card { padding: 16px 10px; max-width: 100%; box-sizing: border-box; }
     .time-input-styled input { font-size: 1.1rem; }
     .emoji-btn { width: 38px; height: 38px; font-size: 1.2rem; }
