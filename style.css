@@ -227,10 +227,10 @@ body {
 
 .time-card label {
     display: block;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
     color: var(--text-card-main);
-    margin-bottom: 12px;
+    margin-bottom: 8px;
 }
 
 .time-input-styled {
@@ -239,13 +239,13 @@ body {
     justify-content: center;
     background: #f5f6fa;
     border-radius: 12px;
-    padding: 10px;
+    padding: 6px;
 }
 
 .time-input-styled input {
     border: none;
     background: transparent;
-    font-size: 1.4rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: var(--text-card-main);
     width: 100%;
