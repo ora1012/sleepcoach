@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function formatKoreanDate(dateStr) {
         const d = new Date(dateStr);
-        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일`;
+        const days = ['일', '월', '화', '수', '목', '금', '토'];
+        return `${d.getFullYear()}년 ${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
     }
 
     function calculateSleepHours(sleepTime, wakeTime) {
