@@ -212,7 +212,7 @@ body {
 /* Form Layouts (Record View) */
 .time-cards-row {
     display: flex;
-    gap: 8px;
+    gap: 4px;
     margin-bottom: 16px;
 }
 
@@ -220,7 +220,7 @@ body {
     flex: 1;
     background: var(--card-white);
     border-radius: var(--radius-card);
-    padding: 20px 16px;
+    padding: 16px 8px;
     text-align: center;
     box-shadow: var(--shadow-card);
 }
