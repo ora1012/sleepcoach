@@ -692,3 +692,16 @@ input:checked + .toggle-slider:before {
     background: linear-gradient(135deg, #7c72ff 0%, #4850ff 100%); /* 충분 */
     color: white;
 }
+
+
+/* Responsive Adjustments */
+@media (max-width: 400px) {
+    .app-view { padding: 0 16px 20px; width: 100%; box-sizing: border-box; overflow-x: hidden; }
+    .ui-card { padding: 16px; max-width: 100%; box-sizing: border-box; }
+    .time-cards-row { gap: 10px; }
+    .time-card { padding: 16px 10px; max-width: 100%; box-sizing: border-box; }
+    .time-input-styled input { font-size: 1.1rem; }
+    .emoji-btn { width: 38px; height: 38px; font-size: 1.2rem; }
+    .page-title { font-size: 1.5rem; }
+}
+
