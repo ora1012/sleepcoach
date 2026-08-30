@@ -330,49 +330,29 @@ input[type="range"]::-webkit-slider-thumb {
     transform: scale(1.1);
 }
 
-/* Toggle */
-.toggle-row {
+/* Choice Buttons */
+.choice-group {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    gap: 8px;
 }
 
-.toggle-switch {
-    position: relative;
-    width: 50px;
-    height: 28px;
-}
-
-.toggle-switch input { display: none; }
-
-.toggle-slider {
-    position: absolute;
+.choice-btn {
+    flex: 1;
+    padding: 12px;
+    background: transparent;
+    border: 1px solid #e0e0e0;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-card-sub);
     cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--toggle-off);
-    transition: .4s;
-    border-radius: 34px;
+    transition: var(--transition);
 }
 
-.toggle-slider:before {
-    position: absolute;
-    content: "";
-    height: 20px;
-    width: 20px;
-    left: 4px;
-    bottom: 4px;
-    background-color: white;
-    transition: .4s;
-    border-radius: 50%;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
-
-input:checked + .toggle-slider {
-    background: var(--grad-primary);
-}
-
-input:checked + .toggle-slider:before {
-    transform: translateX(22px);
+.choice-btn.active {
+    background: #f0f4ff;
+    border-color: var(--slider-fill);
+    color: var(--slider-fill);
 }
 
 /* Main Button */

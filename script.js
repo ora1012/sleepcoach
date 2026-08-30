@@ -324,7 +324,8 @@ document.addEventListener("DOMContentLoaded", () => {
             phoneDisp: document.getElementById('phone-time-display'),
             phoneFill: document.getElementById('slider-progress-fill'),
             ratingBtns: document.querySelectorAll('.emoji-btn'),
-            inSleepy: document.getElementById('input-day-sleepy'),
+            btnSleepyYes: document.getElementById('btn-sleepy-yes'),
+            btnSleepyNo: document.getElementById('btn-sleepy-no'),
             btnSave: document.getElementById('btn-save-record'),
             
             navBtns: {
@@ -416,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.els.inSleep.value = exist.sleepTime;
                 this.els.inWake.value = exist.wakeTime;
                 this.els.inPhone.value = exist.phoneMinutes;
-                this.els.inSleepy.checked = exist.daySleepy;
+                AppState.selectedSleepy = exist.daySleepy;
                 AppState.selectedCondition = exist.condition;
                 this.els.btnSave.disabled = false;
             } else {
@@ -424,13 +425,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.els.inSleep.value = "23:20";
                 this.els.inWake.value = "07:00";
                 this.els.inPhone.value = "90";
-                this.els.inSleepy.checked = false;
+                AppState.selectedSleepy = false;
                 AppState.selectedCondition = null;
                 this.els.btnSave.disabled = true;
             }
 
             this.updateSliderUI();
             this.updateEmojiUI();
+            this.updateSleepyUI();
+            this.checkFormValidity();
+        },
+
+        checkFormValidity() {
+            this.els.btnSave.disabled = (AppState.selectedCondition === null);
         },
 
         updateSliderUI() {
@@ -446,6 +453,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const isActive = parseInt(b.dataset.value) === AppState.selectedCondition;
                 b.classList.toggle('active', isActive);
             });
+        },
+
+        updateSleepyUI() {
+            if(this.els.btnSleepyYes && this.els.btnSleepyNo) {
+                this.els.btnSleepyYes.classList.toggle('active', AppState.selectedSleepy === true);
+                this.els.btnSleepyNo.classList.toggle('active', AppState.selectedSleepy === false);
+            }
         },
 
         async updateAnalysisView() {
@@ -694,9 +708,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.addEventListener('click', () => {
                     AppState.selectedCondition = Number(btn.dataset.value);
                     this.updateEmojiUI();
-                    this.els.btnSave.disabled = false;
+                    this.checkFormValidity();
                 });
             });
+
+            // Sleepy Buttons
+            if (this.els.btnSleepyYes) {
+                this.els.btnSleepyYes.addEventListener('click', () => {
+                    AppState.selectedSleepy = true;
+                    this.updateSleepyUI();
+                });
+            }
+            if (this.els.btnSleepyNo) {
+                this.els.btnSleepyNo.addEventListener('click', () => {
+                    AppState.selectedSleepy = false;
+                    this.updateSleepyUI();
+                });
+            }
 
             // Form Submit
             this.els.form.addEventListener('submit', async (e) => {
@@ -722,7 +750,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     sleepHours: sh,
                     phoneMinutes: Number(this.els.inPhone.value),
                     condition: AppState.selectedCondition,
-                    daySleepy: this.els.inSleepy.checked
+                    daySleepy: AppState.selectedSleepy
                 };
 
                 const idx = AppState.records.findIndex(r => r.date === rec.date);
