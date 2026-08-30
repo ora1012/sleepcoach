@@ -353,6 +353,7 @@ input[type="range"]::-webkit-slider-thumb {
     background: white;
     border-radius: 50%;
     left: 2px;
+    transform: translateX(52px); /* 기본(아니오): 오른쪽 */
     box-shadow: 0 2px 6px rgba(0,0,0,0.15);
     transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     z-index: 2;
@@ -367,25 +368,25 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .text-toggle-label.yes {
-    left: 14px;
+    right: 18px; /* 예: 오른쪽에 텍스트, 썸네일은 왼쪽 */
     color: white;
     opacity: 0;
 }
 
 .text-toggle-label.no {
-    right: 14px;
-    color: var(--text-card-sub);
+    left: 12px; /* 아니오: 왼쪽에 텍스트, 썸네일은 오른쪽 */
+    color: #a0a2b1; /* 이전보다 밝은 회색 */
     opacity: 1;
 }
 
-/* Checked state */
+/* Checked state (예) */
 input:checked + .text-toggle-track {
     background: var(--grad-primary);
     border-color: transparent;
 }
 
 input:checked + .text-toggle-track .text-toggle-thumb {
-    transform: translateX(52px);
+    transform: translateX(0); /* 썸네일을 왼쪽으로 */
 }
 
 input:checked + .text-toggle-track .text-toggle-label.yes {
