@@ -324,8 +324,7 @@ document.addEventListener("DOMContentLoaded", () => {
             phoneDisp: document.getElementById('phone-time-display'),
             phoneFill: document.getElementById('slider-progress-fill'),
             ratingBtns: document.querySelectorAll('.emoji-btn'),
-            btnSleepyYes: document.getElementById('btn-sleepy-yes'),
-            btnSleepyNo: document.getElementById('btn-sleepy-no'),
+            inSleepy: document.getElementById('input-day-sleepy'),
             btnSave: document.getElementById('btn-save-record'),
             
             navBtns: {
@@ -432,7 +431,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             this.updateSliderUI();
             this.updateEmojiUI();
-            this.updateSleepyUI();
+            
+            if (this.els.inSleepy) {
+                this.els.inSleepy.checked = AppState.selectedSleepy === true;
+            }
             this.checkFormValidity();
         },
 
@@ -453,13 +455,6 @@ document.addEventListener("DOMContentLoaded", () => {
                 const isActive = parseInt(b.dataset.value) === AppState.selectedCondition;
                 b.classList.toggle('active', isActive);
             });
-        },
-
-        updateSleepyUI() {
-            if(this.els.btnSleepyYes && this.els.btnSleepyNo) {
-                this.els.btnSleepyYes.classList.toggle('active', AppState.selectedSleepy === true);
-                this.els.btnSleepyNo.classList.toggle('active', AppState.selectedSleepy === false);
-            }
         },
 
         async updateAnalysisView() {
@@ -712,17 +707,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
             });
 
-            // Sleepy Buttons
-            if (this.els.btnSleepyYes) {
-                this.els.btnSleepyYes.addEventListener('click', () => {
-                    AppState.selectedSleepy = true;
-                    this.updateSleepyUI();
-                });
-            }
-            if (this.els.btnSleepyNo) {
-                this.els.btnSleepyNo.addEventListener('click', () => {
-                    AppState.selectedSleepy = false;
-                    this.updateSleepyUI();
+            // Sleepy Toggle
+            if (this.els.inSleepy) {
+                this.els.inSleepy.addEventListener('change', (e) => {
+                    AppState.selectedSleepy = e.target.checked;
                 });
             }
 

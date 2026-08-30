@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>잠코치 - 리프레시 UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=6">
+    <link rel="stylesheet" href="style.css?v=7">
 </head>
 <body>
     <div class="app-container">
@@ -86,12 +86,16 @@
                     </div>
                 </div>
 
-                <div class="ui-card">
-                    <h3 style="margin:0; margin-bottom:12px;">낮에 졸렸나요?</h3>
-                    <div class="choice-group">
-                        <button type="button" class="choice-btn" data-value="true" id="btn-sleepy-yes">예</button>
-                        <button type="button" class="choice-btn active" data-value="false" id="btn-sleepy-no">아니오</button>
-                    </div>
+                <div class="ui-card" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0;">낮에 졸렸나요?</h3>
+                    <label class="text-toggle">
+                        <input type="checkbox" id="input-day-sleepy" style="display:none;">
+                        <div class="text-toggle-track">
+                            <div class="text-toggle-thumb"></div>
+                            <span class="text-toggle-label yes">예</span>
+                            <span class="text-toggle-label no">아니오</span>
+                        </div>
+                    </label>
                 </div>
 
                 <button type="submit" id="btn-save-record" class="btn-submit" disabled>기록 저장하기</button>
@@ -211,6 +215,6 @@
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=6"></script>
+    <script src="script.js?v=7"></script>
 </body>
 </html>
