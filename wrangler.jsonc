@@ -6,8 +6,5 @@
   "observability": {
     "enabled": true
   },
-  "assets": {
-    "directory": "."
-  },
   "ai": { "binding": "AI" }
 }
