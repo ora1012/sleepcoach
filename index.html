@@ -5,7 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>잠코치 - 리프레시 UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=9">
+    <link rel="stylesheet" href="style.css?v=10">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
     <div class="app-container">
@@ -147,6 +148,30 @@
                         <button id="btn-refresh-comment" style="background: none; border: none; color: #9a7bff; font-size: 0.8rem; cursor: pointer; padding: 4px 8px; text-decoration: underline;">코멘트 새로 받기</button>
                     </div>
                 </div>
+
+                <div id="dashboard-section" style="margin-top: 16px;">
+                    <h2 style="font-size: 1.1rem; margin-bottom: 12px; padding: 0 4px;">최근 14일 분석</h2>
+                    
+                    <div class="ui-card" style="margin-bottom: 16px; padding: 16px;">
+                        <h3 style="margin-bottom: 16px;">수면 시간 추이</h3>
+                        <div style="position: relative; height: 200px; width: 100%;">
+                            <canvas id="chart-sleep-trend"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="ui-card" style="margin-bottom: 16px; padding: 16px;">
+                        <h3 style="margin-bottom: 16px;">폰을 많이 본 날, 컨디션은?</h3>
+                        <div style="position: relative; height: 200px; width: 100%;">
+                            <canvas id="chart-phone-condition"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="grad-card">
+                        <h3>미션 완료율</h3>
+                        <div class="huge-text" id="dashboard-mission-rate" style="margin-top: 8px;">--/--</div>
+                        <div class="sub-text" id="dashboard-mission-text">이번 달 미션 완료 (--%)</div>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -194,6 +219,10 @@
                 </div>
             </div>
 
+            <div id="calendar-monthly-summary" style="text-align: center; margin-top: 16px; margin-bottom: 8px; color: var(--text-sub); font-size: 0.95rem; font-weight: 500;">
+                이달 기록 0일 · 평균 0.0시간 · 충분히 잔 날 0일
+            </div>
+
             <!-- 달력 클릭 시 상세 정보 패널 -->
             <div id="calendar-detail-panel" class="calendar-card" style="display:none; margin-top: 16px; padding: 20px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 12px;">
@@ -224,6 +253,6 @@
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=9"></script>
+    <script src="script.js?v=10"></script>
 </body>
 </html>

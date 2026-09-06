@@ -382,6 +382,16 @@ document.addEventListener("DOMContentLoaded", () => {
             patternsList: document.getElementById('patterns-list'),
             aiComment: document.getElementById('ai-comment-text'),
             btnRefreshComment: document.getElementById('btn-refresh-comment'),
+            
+            // Dashboard
+            dashboardSection: document.getElementById('dashboard-section'),
+            chartSleepTrend: document.getElementById('chart-sleep-trend'),
+            chartPhoneCond: document.getElementById('chart-phone-condition'),
+            dashMissionRate: document.getElementById('dashboard-mission-rate'),
+            dashMissionText: document.getElementById('dashboard-mission-text'),
+
+            // Calendar
+            calMonthlySummary: document.getElementById('calendar-monthly-summary'),
 
             // Mission
             missionActive: document.getElementById('mission-active'),
@@ -584,6 +594,153 @@ document.addEventListener("DOMContentLoaded", () => {
                 this.els.aiComment.textContent = cmt;
                 this.els.aiComment.classList.remove('loading');
             }
+
+            // Dashboard
+            if (this.els.dashboardSection) {
+                this.renderDashboard(recs);
+            }
+        },
+
+        chartInstances: {},
+
+        renderDashboard(records) {
+            const recent14 = [...records].sort((a,b) => new Date(a.date) - new Date(b.date)).slice(-14);
+            
+            // Sleep Trend Chart
+            if (this.chartInstances.sleep) this.chartInstances.sleep.destroy();
+            const sleepCtx = this.els.chartSleepTrend.getContext('2d');
+            
+            const sleepLabels = recent14.map(r => {
+                const d = new Date(r.date);
+                return `${d.getMonth()+1}/${d.getDate()}`;
+            });
+            const sleepData = recent14.map(r => r.sleepHours);
+            const sleepColors = recent14.map(r => {
+                if (r.sleepHours < 6) return '#9a7bff'; 
+                if (r.sleepHours < 7.5) return '#6592ff'; 
+                return '#4850ff'; 
+            });
+
+            this.chartInstances.sleep = new Chart(sleepCtx, {
+                type: 'bar',
+                data: {
+                    labels: sleepLabels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: '권장 수면 (8시간)',
+                            data: Array(recent14.length).fill(8),
+                            borderColor: 'rgba(255,255,255,0.4)',
+                            borderWidth: 2,
+                            borderDash: [5, 5],
+                            pointRadius: 0,
+                            fill: false
+                        },
+                        {
+                            type: 'bar',
+                            label: '수면 시간',
+                            data: sleepData,
+                            backgroundColor: sleepColors,
+                            borderRadius: 4
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: { 
+                            beginAtZero: true, 
+                            max: 12,
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#a0a2b1' }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#a0a2b1' }
+                        }
+                    }
+                }
+            });
+
+            // Phone vs Condition Chart
+            if (this.chartInstances.phone) this.chartInstances.phone.destroy();
+            const phoneCtx = this.els.chartPhoneCond.getContext('2d');
+            
+            const sortedByPhone = [...recent14].sort((a,b) => a.phoneMinutes - b.phoneMinutes);
+            const phoneLabels = sortedByPhone.map(r => `${r.phoneMinutes}분`);
+            const phoneData = sortedByPhone.map(r => r.phoneMinutes);
+            const condData = sortedByPhone.map(r => r.condition);
+
+            this.chartInstances.phone = new Chart(phoneCtx, {
+                type: 'bar',
+                data: {
+                    labels: phoneLabels,
+                    datasets: [
+                        {
+                            type: 'line',
+                            label: '컨디션',
+                            data: condData,
+                            borderColor: '#fbbf24',
+                            backgroundColor: '#fbbf24',
+                            borderWidth: 2,
+                            yAxisID: 'y1',
+                            tension: 0.3
+                        },
+                        {
+                            type: 'bar',
+                            label: '폰 사용(분)',
+                            data: phoneData,
+                            backgroundColor: 'rgba(124,114,255,0.6)',
+                            borderRadius: 4,
+                            yAxisID: 'y'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            grid: { color: 'rgba(255,255,255,0.1)' },
+                            ticks: { color: '#a0a2b1' }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            min: 0,
+                            max: 5,
+                            grid: { display: false },
+                            ticks: { color: '#fbbf24', stepSize: 1 }
+                        },
+                        x: {
+                            grid: { display: false },
+                            ticks: { color: '#a0a2b1', maxRotation: 0, autoSkip: true }
+                        }
+                    }
+                }
+            });
+
+            // Mission Completion Rate
+            const today = new Date();
+            const monthPrefix = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}`;
+            const thisMonthMissions = AppState.missions.filter(m => m.date.startsWith(monthPrefix));
+            const doneMissions = thisMonthMissions.filter(m => m.done);
+            
+            if (thisMonthMissions.length > 0) {
+                const rate = Math.round((doneMissions.length / thisMonthMissions.length) * 100);
+                this.els.dashMissionRate.textContent = `${doneMissions.length}/${thisMonthMissions.length}`;
+                this.els.dashMissionText.textContent = `이번 달 미션 완료 (${rate}%)`;
+            } else {
+                this.els.dashMissionRate.textContent = `0/0`;
+                this.els.dashMissionText.textContent = `이번 달 미션 완료 (0%)`;
+            }
         },
 
         updateMissionView() {
@@ -614,6 +771,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
             const firstDay = new Date(year, month - 1, 1).getDay();
             const daysInMonth = new Date(year, month, 0).getDate();
+
+            // Monthly Summary
+            const monthPrefix = `${year}-${String(month).padStart(2, '0')}`;
+            const monthRecs = AppState.records.filter(r => r.date.startsWith(monthPrefix));
+            if (monthRecs.length > 0) {
+                const avg = monthRecs.reduce((sum, r) => sum + r.sleepHours, 0) / monthRecs.length;
+                const highCount = monthRecs.filter(r => r.sleepHours >= 7.5).length;
+                if (this.els.calMonthlySummary) {
+                    this.els.calMonthlySummary.textContent = `이달 기록 ${monthRecs.length}일 · 평균 ${avg.toFixed(1)}시간 · 충분히 잔 날 ${highCount}일`;
+                }
+            } else {
+                if (this.els.calMonthlySummary) {
+                    this.els.calMonthlySummary.textContent = `이달 기록 0일 · 평균 0.0시간 · 충분히 잔 날 0일`;
+                }
+            }
 
             this.els.calGrid.innerHTML = '';
             
@@ -668,7 +840,7 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.calDetailDate.textContent = formatKoreanDate(rec.date);
             const emojiMap = {1:'😳', 2:'😐', 3:'🙂', 4:'😄', 5:'🤩'};
             this.els.calDetailCond.textContent = emojiMap[rec.condition] || '😐';
-            this.els.calDetailSleep.textContent = `${rec.sleepTime} ~ ${rec.wakeTime} (${rec.sleepHours}시간)`;
+            this.els.calDetailSleep.textContent = `${rec.sleepTime.slice(0, 5)} ~ ${rec.wakeTime.slice(0, 5)} (${rec.sleepHours}시간)`;
             this.els.calDetailPhone.textContent = `${rec.phoneMinutes}분`;
             
             this.els.btnEditCalRec.onclick = () => {
