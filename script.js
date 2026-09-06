@@ -265,6 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         getMissionText(type) {
             const map = {
+                sleep_short_urgent: "오늘은 평소보다 1시간 일찍 눕기",
                 sleep_short: "오늘은 평소보다 30분 일찍 누워보기",
                 phone_high: "오늘은 11시 전에 폰을 충전기에 꽂아두기",
                 sleep_irregular: "오늘은 어제와 같은 시각에 누워보기",
@@ -274,11 +275,16 @@ document.addEventListener("DOMContentLoaded", () => {
             return map[type] || map.positive;
         },
 
-        async getAiComment(result) {
+        async getAiComment(result, todayRec) {
             try {
-                const info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
-                const prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘 (매번 조금씩 다른 표현으로 말해줘, id:${Math.random().toString().slice(2,6)}): ${info}`;
+                let info = `평균 수면: ${result.avgSleep.toFixed(1)}시간, 폰 사용: ${Math.round(result.avgPhone)}분`;
+                let prompt = `수면 코치로서 다정한 반말로 2문장 짧게 조언해줘 (매번 조금씩 다른 표현으로 말해줘, id:${Math.random().toString().slice(2,6)}): ${info}`;
                 
+                if (todayRec) {
+                    info = `어젯밤 수면: ${todayRec.sleepHours.toFixed(1)}시간 (최근 평균 ${result.avgSleep.toFixed(1)}시간), 자기 전 폰: ${todayRec.phoneMinutes}분, 컨디션: ${todayRec.condition}/5, 낮 졸림: ${todayRec.daySleepy ? '예' : '아니오'}`;
+                    prompt = `어젯밤 기록에 먼저 반응하고, 그다음 오늘 밤을 위한 한 가지 제안을 해줘. 다정한 반말 2문장. 예: '어젯밤 3시간 40분은 너무 적었어. 오늘은 11시 전에 꼭 눕자.' (id:${Math.random().toString().slice(2,6)}): ${info}`;
+                }
+
                 // Cloudflare Worker API Endpoint
                 const workerUrl = "https://sleepcoach.ora111012.workers.dev/"; 
                 
@@ -367,6 +373,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // Analysis
             analysisLocked: document.getElementById('analysis-locked'),
             analysisUnlocked: document.getElementById('analysis-unlocked'),
+            lastNightCard: document.getElementById('last-night-card'),
+            lastNightSleepTime: document.getElementById('last-night-sleep-time'),
+            lastNightDiff: document.getElementById('last-night-diff'),
+            lastNightReaction: document.getElementById('last-night-reaction'),
             lockFill: document.getElementById('locked-progress-fill'),
             statAvgSleep: document.getElementById('stat-avg-sleep'),
             patternsList: document.getElementById('patterns-list'),
@@ -471,6 +481,65 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.analysisUnlocked.style.display = 'flex';
 
             const res = Analyzer.analyze(recs);
+            const todayRec = recs.find(r => r.date === AppState.todayDateStr);
+
+            if (todayRec) {
+                this.els.lastNightCard.style.display = 'block';
+                const hrs = Math.floor(todayRec.sleepHours);
+                const mins = Math.round((todayRec.sleepHours - hrs) * 60);
+                this.els.lastNightSleepTime.innerHTML = `${hrs}시간 ${mins > 0 ? mins+'분' : ''}`;
+                
+                const diff = todayRec.sleepHours - res.avgSleep;
+                const diffAbs = Math.abs(diff);
+                const diffHrs = Math.floor(diffAbs);
+                const diffMins = Math.round((diffAbs - diffHrs) * 60);
+                const diffStr = diffHrs > 0 ? `${diffHrs}시간 ${diffMins}분` : (diffMins > 0 ? `${diffMins}분` : '0분');
+                
+                if (diff > 0.1) {
+                    this.els.lastNightDiff.textContent = `평소보다 ${diffStr} 더 잤어요`;
+                } else if (diff < -0.1) {
+                    this.els.lastNightDiff.textContent = `평소보다 ${diffStr} 적게 잤어요`;
+                } else {
+                    this.els.lastNightDiff.textContent = `평소와 비슷하게 잤어요`;
+                }
+
+                let reactions = [];
+                if (todayRec.sleepHours < 5) {
+                    reactions = [
+                        "오늘은 진짜 일찍 눕자. 몸이 빚을 갚아야 해.",
+                        "수면 빚이 쌓이면 안 돼. 오늘 밤엔 무조건 푹 자기!",
+                        "너무 적게 잤어. 오늘은 다른 거 다 제쳐두고 쉬자."
+                    ];
+                    this.els.lastNightReaction.style.color = '#ef4444';
+                    res.missionType = 'sleep_short_urgent'; // Mission override
+                } else if (todayRec.sleepHours < 7) {
+                    reactions = [
+                        "조금 부족했어. 오늘 밤 30분만 당겨보자.",
+                        "애매하게 피곤할 수 있겠다. 폰 조금만 덜 보고 자자.",
+                        "나쁘진 않지만 조금 더 자면 좋겠어!"
+                    ];
+                    this.els.lastNightReaction.style.color = '#fbbf24';
+                } else if (todayRec.sleepHours <= 9) {
+                    reactions = [
+                        "딱 좋게 잤네!",
+                        "아주 훌륭해! 오늘 하루도 화이팅!",
+                        "이 패턴 그대로만 유지하자!"
+                    ];
+                    this.els.lastNightReaction.style.color = '#10b981';
+                } else {
+                    reactions = [
+                        "많이 잤네, 어제 피곤했나 봐",
+                        "푹 잤으니 오늘 컨디션은 최고겠다!",
+                        "정말 오래 잤네! 오늘 에너지가 넘칠 거야."
+                    ];
+                    this.els.lastNightReaction.style.color = '#3b82f6';
+                }
+                const randomReact = reactions[Math.floor(Math.random() * reactions.length)];
+                this.els.lastNightReaction.textContent = randomReact;
+            } else {
+                this.els.lastNightCard.style.display = 'none';
+            }
+
             const hrs = Math.floor(res.avgSleep);
             const mins = Math.round((res.avgSleep - hrs) * 60);
             
@@ -510,7 +579,7 @@ document.addEventListener("DOMContentLoaded", () => {
             } else {
                 this.els.aiComment.textContent = "AI가 분석 중입니다...";
                 this.els.aiComment.classList.add('loading');
-                const cmt = await Analyzer.getAiComment(res);
+                const cmt = await Analyzer.getAiComment(res, todayRec);
                 localStorage.setItem(cKey, cmt);
                 this.els.aiComment.textContent = cmt;
                 this.els.aiComment.classList.remove('loading');
