@@ -25,25 +25,35 @@ export default {
         return new Response('Prompt is required', { status: 400, headers: corsHeaders });
       }
 
-      // 4. Call Gemini 1.5 Flash API
-      // env.GEMINI_API_KEY must be set in Cloudflare Workers settings
-      const apiKey = env.GEMINI_API_KEY; 
-      const geminiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+      // 4. Call GitHub Models API
+      // env.GITHUB_TOKEN must be set in Cloudflare Workers settings
+      const token = env.GITHUB_TOKEN; 
+      const apiUrl = 'https://models.github.ai/inference/chat/completions';
 
-      const geminiResponse = await fetch(geminiUrl, {
+      const apiResponse = await fetch(apiUrl, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
         body: JSON.stringify({
-          contents: [{ parts: [{ text: prompt }] }]
+          model: "openai/gpt-4o-mini",
+          messages: [
+            { role: "system", content: "너는 청소년 수면 코치야. 다정한 반말로 2문장만 말해." },
+            { role: "user", content: prompt }
+          ],
+          temperature: 0.9,
+          max_tokens: 200
         })
       });
 
-      if (!geminiResponse.ok) {
-        throw new Error(`Gemini API Error: ${geminiResponse.statusText}`);
+      if (!apiResponse.ok) {
+        const errorBody = await apiResponse.text();
+        throw new Error(`GitHub Models API Error (${apiResponse.status}): ${errorBody}`);
       }
 
-      const data = await geminiResponse.json();
-      const commentText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+      const data = await apiResponse.json();
+      const commentText = data.choices?.[0]?.message?.content || '';
 
       // 5. Return the comment to the frontend
       return new Response(JSON.stringify({ comment: commentText.trim() }), {
