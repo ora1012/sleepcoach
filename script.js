@@ -528,7 +528,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         "애매하게 피곤할 수 있겠다. 폰 조금만 덜 보고 자자.",
                         "나쁘진 않지만 조금 더 자면 좋겠어!"
                     ];
-                    this.els.lastNightReaction.style.color = '#fbbf24';
+                    this.els.lastNightReaction.style.color = '#6b21a8';
                 } else if (todayRec.sleepHours <= 9) {
                     reactions = [
                         "딱 좋게 잤네!",

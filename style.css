@@ -56,19 +56,21 @@ body {
     color: var(--text-main);
     display: flex;
     justify-content: center;
-    min-height: 100vh;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    margin: 0;
 }
 
 .app-container {
     width: 100%;
     max-width: 440px;
-    min-height: 100vh;
+    height: 100%;
     background-color: var(--bg-dark);
     display: flex;
     flex-direction: column;
     position: relative;
-    padding-bottom: 90px; /* Space for bottom nav */
-    overflow-x: hidden;
+    overflow: hidden;
 }
 
 /* ========================================================
@@ -160,6 +162,15 @@ body {
     padding: 0 24px 20px;
     opacity: 0;
     transform: translateY(10px);
+    overflow-y: auto;
+}
+
+.app-view::-webkit-scrollbar {
+    display: none;
+}
+.app-view {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
 .app-view.active {
@@ -608,13 +619,9 @@ input:checked + .text-toggle-track .text-toggle-label.no {
    Bottom Navigation
    ======================================================== */
 .app-nav {
-    position: fixed;
-    bottom: 0; 
-    left: 50%;
-    transform: translateX(-50%);
     width: 100%;
-    max-width: 440px;
     height: 80px;
+    flex-shrink: 0;
     background: var(--nav-bg);
     display: flex;
     justify-content: space-around;
