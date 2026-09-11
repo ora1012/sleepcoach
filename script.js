@@ -249,9 +249,10 @@ document.addEventListener("DOMContentLoaded", () => {
             
             // 2. Regularity (Max 30)
             let regScore = 0;
-            if (stdDev <= 60) regScore = 30;
-            else if (stdDev <= 120) regScore = 25;
-            else if (stdDev <= 180) regScore = 15;
+            if (stdDev <= 30) regScore = 30;
+            else if (stdDev <= 60) regScore = 25;
+            else if (stdDev <= 90) regScore = 20;
+            else if (stdDev <= 120) regScore = 15;
             else regScore = 10;
             
             // 3. Phone Usage (Max 30)
