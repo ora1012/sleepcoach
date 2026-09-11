@@ -279,6 +279,11 @@ body {
     font-weight: 500;
 }
 
+#phone-time-display {
+    font-weight: 800;
+    color: var(--text-card-main);
+}
+
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
