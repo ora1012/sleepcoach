@@ -215,7 +215,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 else patterns.push(`폰 사용 시간이<br><strong>일정하게</strong><br>유지되고 있어요`);
             }
 
-            const score = this.calculateScore(recent);
+            const scoreDetails = this.calculateScoreDetails(recent);
 
             return {
                 avgSleep: avgSleep,
@@ -223,11 +223,12 @@ document.addEventListener("DOMContentLoaded", () => {
                 avgCondition: avgCondition,
                 patterns: patterns.slice(0, 2),
                 missionType: missionType || 'positive',
-                score: score
+                score: scoreDetails.total,
+                scoreDetails: scoreDetails
             };
         },
 
-        calculateScore(recent) {
+        calculateScoreDetails(recent) {
             const count = recent.length;
             const avgSleep = recent.reduce((sum, r) => sum + r.sleepHours, 0) / count;
             const avgPhone = recent.reduce((sum, r) => sum + r.phoneMinutes, 0) / count;
@@ -260,7 +261,13 @@ document.addEventListener("DOMContentLoaded", () => {
             else if (avgPhone <= 120) phoneScore = 15;
             else phoneScore = 10;
             
-            return sleepScore + regScore + phoneScore;
+            return {
+                total: sleepScore + regScore + phoneScore,
+                sleepScore,
+                regScore,
+                phoneScore,
+                stdDev
+            };
         },
 
         getMissionText(type) {
@@ -559,46 +566,27 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.statAvgSleep.innerHTML = `${hrs}시간 ${mins > 0 ? mins+'분' : ''}`;
 
             // Add Detail Scores Update
-            let sleepScore = 0;
-            if (res.avgSleep >= 8) sleepScore = 100;
-            else if (res.avgSleep >= 7) sleepScore = 90;
-            else if (res.avgSleep >= 6) sleepScore = 80;
-            else if (res.avgSleep >= 5) sleepScore = 60;
-            else sleepScore = 40;
-
-            let phoneScore = 0;
-            if (res.avgPhone <= 30) phoneScore = 100;
-            else if (res.avgPhone <= 60) phoneScore = 85;
-            else if (res.avgPhone <= 120) phoneScore = 70;
-            else phoneScore = 50;
-
-            const monthPrefix = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-            const thisMonthMissions = AppState.missions.filter(m => m.date.startsWith(monthPrefix));
-            const doneMissions = thisMonthMissions.filter(m => m.done);
-            let missionRate = 100;
-            let missionTotal = thisMonthMissions.length;
-            let missionCount = doneMissions.length;
-            if (missionTotal > 0) {
-                missionRate = Math.round((missionCount / missionTotal) * 100);
-            }
+            const details = res.scoreDetails;
+            const sleepScore = details.sleepScore;
+            const regScore = details.regScore;
+            const phoneScore = details.phoneScore;
 
             const detailSleepScore = document.getElementById('detail-sleep-score');
             if (detailSleepScore) {
-                detailSleepScore.textContent = sleepScore;
-                document.getElementById('bar-sleep-score').style.width = `${sleepScore}%`;
+                detailSleepScore.textContent = `${sleepScore}/40`;
+                document.getElementById('bar-sleep-score').style.width = `${(sleepScore / 40) * 100}%`;
                 
                 const sHrs = Math.floor(res.avgSleep);
                 const sMins = Math.round((res.avgSleep - sHrs) * 60);
                 document.getElementById('detail-sleep-val').textContent = `${sHrs}시간 ${sMins > 0 ? sMins+'분' : ''}`;
 
-                document.getElementById('detail-phone-score').textContent = phoneScore;
-                document.getElementById('bar-phone-score').style.width = `${phoneScore}%`;
-                document.getElementById('detail-phone-val').textContent = `${Math.round(res.avgPhone)}분`;
+                document.getElementById('detail-reg-score').textContent = `${regScore}/30`;
+                document.getElementById('bar-reg-score').style.width = `${(regScore / 30) * 100}%`;
+                document.getElementById('detail-reg-val').textContent = `±${Math.round(details.stdDev)}분`;
 
-                document.getElementById('detail-mission-score').textContent = missionRate;
-                document.getElementById('bar-mission-score').style.width = `${missionRate}%`;
-                document.getElementById('detail-mission-val').textContent = `${missionRate}%`;
-                document.getElementById('detail-mission-count').textContent = missionTotal > 0 ? `(${missionTotal}개 중 ${missionCount}개)` : '(0개 중 0개)';
+                document.getElementById('detail-phone-score').textContent = `${phoneScore}/30`;
+                document.getElementById('bar-phone-score').style.width = `${(phoneScore / 30) * 100}%`;
+                document.getElementById('detail-phone-val').textContent = `${Math.round(res.avgPhone)}분`;
             }
 
             this.els.patternsList.innerHTML = '';

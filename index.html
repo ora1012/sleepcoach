@@ -150,7 +150,7 @@
                                 <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
                                     <div class="icon-circle sleep-icon"><i class="fa-solid fa-bed"></i></div>
                                     <div style="text-align: left;">
-                                        <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">수면 점수</div>
+                                        <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">수면 시간 점수</div>
                                         <div style="font-size: 1.0rem; font-weight: 700; color: white;"><span id="detail-sleep-score">--</span>점</div>
                                     </div>
                                 </div>
@@ -159,6 +159,22 @@
                                     <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">평균 수면</div>
                                     <div style="font-size: 0.85rem; font-weight: 700; color: white;" id="detail-sleep-val">--</div>
                                     <div style="font-size: 0.65rem; color: var(--text-sub); margin-top: 2px; visibility: hidden;">-</div>
+                                </div>
+                            </div>
+                            <!-- Regularity Score -->
+                            <div class="score-item">
+                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                                    <div class="icon-circle reg-icon"><i class="fa-solid fa-clock-rotate-left"></i></div>
+                                    <div style="text-align: left;">
+                                        <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">수면 규칙성 점수</div>
+                                        <div style="font-size: 1.0rem; font-weight: 700; color: white;"><span id="detail-reg-score">--</span>점</div>
+                                    </div>
+                                </div>
+                                <div class="score-bar-bg"><div class="score-bar-fill reg-fill" id="bar-reg-score" style="width: 0%;"></div></div>
+                                <div style="margin-top: 12px; text-align: left;">
+                                    <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">수면 변동</div>
+                                    <div style="font-size: 0.85rem; font-weight: 700; color: white;" id="detail-reg-val">--</div>
+                                    <div style="font-size: 0.65rem; color: var(--text-sub); margin-top: 2px;">(취침 시간)</div>
                                 </div>
                             </div>
                             <!-- Phone Score -->
@@ -175,22 +191,6 @@
                                     <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">평균 폰 사용</div>
                                     <div style="font-size: 0.85rem; font-weight: 700; color: white;" id="detail-phone-val">--</div>
                                     <div style="font-size: 0.65rem; color: var(--text-sub); margin-top: 2px;">(하루 평균)</div>
-                                </div>
-                            </div>
-                            <!-- Mission Score -->
-                            <div class="score-item">
-                                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                                    <div class="icon-circle mission-icon"><i class="fa-solid fa-bullseye"></i></div>
-                                    <div style="text-align: left;">
-                                        <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">미션 완료 점수</div>
-                                        <div style="font-size: 1.0rem; font-weight: 700; color: white;"><span id="detail-mission-score">--</span>점</div>
-                                    </div>
-                                </div>
-                                <div class="score-bar-bg"><div class="score-bar-fill mission-fill" id="bar-mission-score" style="width: 0%;"></div></div>
-                                <div style="margin-top: 12px; text-align: left;">
-                                    <div style="font-size: 0.65rem; color: var(--text-sub); margin-bottom: 2px;">미션 완료율</div>
-                                    <div style="font-size: 0.85rem; font-weight: 700; color: white;" id="detail-mission-val">--</div>
-                                    <div style="font-size: 0.65rem; color: var(--text-sub); margin-top: 2px;" id="detail-mission-count">--</div>
                                 </div>
                             </div>
                         </div>
