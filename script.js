@@ -125,9 +125,14 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         },
         async saveRecord(rec) {
+            const { data: sessionData } = await supabase.auth.getSession();
+            const payload = this.toSnake(rec);
+            if (sessionData?.session?.user?.id) {
+                payload.user_id = sessionData.session.user.id;
+            }
             const { error } = await supabase
                 .from('records')
-                .upsert([this.toSnake(rec)], { onConflict: 'user_id,date' });
+                .upsert([payload], { onConflict: 'user_id,date' });
             if (error) console.error("Supabase Save error:", error);
         },
         async migrateLocalRecords() {
@@ -136,9 +141,16 @@ document.addEventListener("DOMContentLoaded", () => {
                 const localRecs = JSON.parse(localRaw);
                 if (localRecs && localRecs.length > 0) {
                     if (confirm(`로컬에 저장된 ${localRecs.length}개의 기록이 있습니다. 계정으로 이전하시겠습니까?`)) {
+                        const { data: sessionData } = await supabase.auth.getSession();
+                        const uid = sessionData?.session?.user?.id;
+                        const payload = localRecs.map(r => {
+                            const sr = this.toSnake(r);
+                            if (uid) sr.user_id = uid;
+                            return sr;
+                        });
                         const { error } = await supabase
                             .from('records')
-                            .upsert(localRecs.map(r => this.toSnake(r)), { onConflict: 'user_id,date' });
+                            .upsert(payload, { onConflict: 'user_id,date' });
                         if (!error) {
                             localStorage.removeItem('sleepcoach_records');
                             alert('이전이 완료되었습니다.');
@@ -1128,18 +1140,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 if (AppState.isLoggedIn) {
                     await DBService.saveRecord(rec);
-                } else {
-                    StorageDB.saveRecords();
                 }
                 
+                StorageDB.saveRecords();
+                
                 // 어떤 날짜의 기록이든 수정/저장 시, 기존 캐시(오늘 포함)를 전부 날려서 가장 최신 분석을 받도록 강제
+                const keysToRemove = [];
                 for (let i = 0; i < localStorage.length; i++) {
                     const k = localStorage.key(i);
                     if (k && k.startsWith("sc_comment_")) {
-                        localStorage.removeItem(k);
-                        i--; // 항목이 삭제되었으므로 인덱스 보정
+                        keysToRemove.push(k);
                     }
                 }
+                keysToRemove.forEach(k => localStorage.removeItem(k));
                 
                 this.switchView('view-analysis');
             });
