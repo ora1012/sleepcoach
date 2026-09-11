@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>잠코치 - 리프레시 UI</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css?v=13">
+    <link rel="stylesheet" href="style.css?v=14">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
 </head>
 <body>
@@ -253,6 +253,14 @@
                 <i class="fa-solid fa-check check-icon-large"></i>
             </div>
 
+            <!-- Mission History List -->
+            <div id="mission-list-container" style="margin-top: 24px;">
+                <h3 style="margin-bottom: 12px; font-size: 1.1rem; padding: 0 4px; color: var(--text-main);">지난 미션 기록</h3>
+                <div id="mission-list-content">
+                    <!-- Injected by JS -->
+                </div>
+            </div>
+
         </main>
 
         <!-- VIEW 4: CALENDAR -->
@@ -313,6 +321,6 @@
 
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=13"></script>
+    <script src="script.js?v=14"></script>
 </body>
 </html>

@@ -776,21 +776,68 @@ document.addEventListener("DOMContentLoaded", () => {
         },
 
         updateMissionView() {
-            const todayMiss = AppState.missions.find(m => m.date === AppState.todayDateStr);
+            const todayStr = AppState.todayDateStr;
+            const todayMiss = AppState.missions.find(m => m.date === todayStr);
+            
             if (!todayMiss) {
                 this.els.missionText.textContent = "아직 분석 데이터가 부족하여 미션이 없습니다.";
                 this.els.btnCompleteM.style.display = 'none';
-                return;
+            } else {
+                this.els.missionText.textContent = todayMiss.text;
+                if (todayMiss.done) {
+                    this.els.missionActive.style.display = 'none';
+                    this.els.missionDone.style.display = 'block';
+                } else {
+                    this.els.missionActive.style.display = 'block';
+                    this.els.missionDone.style.display = 'none';
+                    this.els.btnCompleteM.style.display = 'block';
+                }
             }
 
-            this.els.missionText.textContent = todayMiss.text;
-            if (todayMiss.done) {
-                this.els.missionActive.style.display = 'none';
-                this.els.missionDone.style.display = 'block';
-            } else {
-                this.els.missionActive.style.display = 'block';
-                this.els.missionDone.style.display = 'none';
-                this.els.btnCompleteM.style.display = 'block';
+            // Render mission list
+            const missionListEl = document.getElementById('mission-list-content');
+            if (missionListEl) {
+                missionListEl.innerHTML = '';
+                
+                // Sort missions by date descending
+                const sortedMissions = [...AppState.missions].sort((a, b) => b.date.localeCompare(a.date));
+                
+                if (sortedMissions.length === 0) {
+                    missionListEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding: 20px;">기록된 미션이 없습니다.</div>';
+                } else {
+                    sortedMissions.forEach(m => {
+                        const mText = m.text || "미션 정보 없음";
+                        const isDone = m.done;
+                        const isToday = m.date === todayStr;
+                        
+                        let iconClassActual = 'fail';
+                        let iconHtml = '<i class="fa-solid fa-xmark"></i>';
+                        
+                        if (isDone) {
+                            iconClassActual = 'done';
+                            iconHtml = '<i class="fa-solid fa-check"></i>';
+                        } else if (isToday) {
+                            iconClassActual = 'pending';
+                            iconHtml = '<i class="fa-solid fa-ellipsis"></i>';
+                        }
+                        
+                        const d = new Date(m.date);
+                        const days = ['일', '월', '화', '수', '목', '금', '토'];
+                        const dateStr = `${d.getMonth() + 1}월 ${d.getDate()}일 (${days[d.getDay()]})`;
+
+                        missionListEl.innerHTML += `
+                            <div class="mission-history-item">
+                                <div class="mission-history-icon ${iconClassActual}" style="${iconClassActual === 'pending' ? 'background: rgba(255, 255, 255, 0.1); color: #a0a2b1;' : ''}">
+                                    ${iconHtml}
+                                </div>
+                                <div class="mission-history-details">
+                                    <div class="mission-history-date">${dateStr}</div>
+                                    <div class="mission-history-text">${mText}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
             }
         },
 
