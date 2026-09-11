@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         },
 
-        getMissionText(type, legacyDateFallback = null) {
+        getMissionText(type, dateStr = null) {
             const map = {
                 sleep_short_urgent: [
                     "오늘은 평소보다 1시간 일찍 눕기",
@@ -313,12 +313,16 @@ document.addEventListener("DOMContentLoaded", () => {
             };
             const options = map[type] || map.positive;
             
-            if (legacyDateFallback) {
-                return options[0];
+            if (dateStr) {
+                let hash = 0;
+                for (let i = 0; i < dateStr.length; i++) {
+                    hash = dateStr.charCodeAt(i) + ((hash << 5) - hash);
+                }
+                const idx = Math.abs(hash) % options.length;
+                return options[idx];
             }
             
-            const dayOfMonth = new Date().getDate();
-            return options[dayOfMonth % options.length];
+            return options[Math.floor(Math.random() * options.length)];
         },
 
         async getAiComment(result, todayRec) {
@@ -638,15 +642,17 @@ document.addEventListener("DOMContentLoaded", () => {
             });
 
             // Handle Mission setup
-            const mText = Analyzer.getMissionText(res.missionType);
             let todayMiss = AppState.missions.find(m => m.date === AppState.todayDateStr);
             if (!todayMiss) {
+                const mText = Analyzer.getMissionText(res.missionType);
                 todayMiss = { date: AppState.todayDateStr, type: res.missionType, text: mText, done: false };
                 AppState.missions.push(todayMiss);
             } else if (!todayMiss.done) {
-                // 분석 데이터가 바뀌면 아직 완료하지 않은 오늘의 미션 내용도 업데이트
-                todayMiss.type = res.missionType;
-                todayMiss.text = mText;
+                // 분석 데이터가 바뀌어 미션 타입이 변경된 경우에만 텍스트 새로 배정
+                if (todayMiss.type !== res.missionType) {
+                    todayMiss.type = res.missionType;
+                    todayMiss.text = Analyzer.getMissionText(res.missionType);
+                }
             }
             StorageDB.saveMissions();
 
