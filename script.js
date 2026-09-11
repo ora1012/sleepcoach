@@ -558,6 +558,49 @@ document.addEventListener("DOMContentLoaded", () => {
             
             this.els.statAvgSleep.innerHTML = `${hrs}시간 ${mins > 0 ? mins+'분' : ''}`;
 
+            // Add Detail Scores Update
+            let sleepScore = 0;
+            if (res.avgSleep >= 8) sleepScore = 100;
+            else if (res.avgSleep >= 7) sleepScore = 90;
+            else if (res.avgSleep >= 6) sleepScore = 80;
+            else if (res.avgSleep >= 5) sleepScore = 60;
+            else sleepScore = 40;
+
+            let phoneScore = 0;
+            if (res.avgPhone <= 30) phoneScore = 100;
+            else if (res.avgPhone <= 60) phoneScore = 85;
+            else if (res.avgPhone <= 120) phoneScore = 70;
+            else phoneScore = 50;
+
+            const monthPrefix = `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
+            const thisMonthMissions = AppState.missions.filter(m => m.date.startsWith(monthPrefix));
+            const doneMissions = thisMonthMissions.filter(m => m.done);
+            let missionRate = 100;
+            let missionTotal = thisMonthMissions.length;
+            let missionCount = doneMissions.length;
+            if (missionTotal > 0) {
+                missionRate = Math.round((missionCount / missionTotal) * 100);
+            }
+
+            const detailSleepScore = document.getElementById('detail-sleep-score');
+            if (detailSleepScore) {
+                detailSleepScore.textContent = sleepScore;
+                document.getElementById('bar-sleep-score').style.width = `${sleepScore}%`;
+                
+                const sHrs = Math.floor(res.avgSleep);
+                const sMins = Math.round((res.avgSleep - sHrs) * 60);
+                document.getElementById('detail-sleep-val').textContent = `${sHrs}시간 ${sMins > 0 ? sMins+'분' : ''}`;
+
+                document.getElementById('detail-phone-score').textContent = phoneScore;
+                document.getElementById('bar-phone-score').style.width = `${phoneScore}%`;
+                document.getElementById('detail-phone-val').textContent = `${Math.round(res.avgPhone)}분`;
+
+                document.getElementById('detail-mission-score').textContent = missionRate;
+                document.getElementById('bar-mission-score').style.width = `${missionRate}%`;
+                document.getElementById('detail-mission-val').textContent = `${missionRate}%`;
+                document.getElementById('detail-mission-count').textContent = missionTotal > 0 ? `(${missionTotal}개 중 ${missionCount}개)` : '(0개 중 0개)';
+            }
+
             this.els.patternsList.innerHTML = '';
             res.patterns.forEach(p => {
                 this.els.patternsList.innerHTML += `
@@ -875,6 +918,23 @@ document.addEventListener("DOMContentLoaded", () => {
             this.els.navBtns['view-analysis'].addEventListener('click', () => this.switchView('view-analysis'));
             this.els.navBtns['view-mission'].addEventListener('click', () => this.switchView('view-mission'));
             this.els.navBtns['view-calendar'].addEventListener('click', () => this.switchView('view-calendar'));
+
+            // Toggle score detail view
+            const btnScoreToggle = document.getElementById('btn-toggle-score-detail');
+            const contentScoreDetail = document.getElementById('score-detail-content');
+            const iconScoreToggle = document.getElementById('icon-score-detail-toggle');
+            if (btnScoreToggle && contentScoreDetail) {
+                btnScoreToggle.addEventListener('click', () => {
+                    const isHidden = contentScoreDetail.style.display === 'none';
+                    if (isHidden) {
+                        contentScoreDetail.style.display = 'block';
+                        iconScoreToggle.style.transform = 'rotate(180deg)';
+                    } else {
+                        contentScoreDetail.style.display = 'none';
+                        iconScoreToggle.style.transform = 'rotate(0deg)';
+                    }
+                });
+            }
 
             // Refresh AI Comment
             if (this.els.btnRefreshComment) {

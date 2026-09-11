@@ -749,3 +749,56 @@ input:checked + .text-toggle-track .text-toggle-label.no {
     .page-title { font-size: 1.5rem; }
 }
 
+/* ========================================================
+   Score Detail View
+   ======================================================== */
+.score-detail-card {
+    background: #232431;
+    color: var(--text-main);
+    border: none;
+}
+.score-detail-card h3 {
+    color: var(--text-main);
+}
+.score-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+.score-item {
+    background: #2b2c3a;
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+}
+.icon-circle {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    flex-shrink: 0;
+}
+.icon-circle.sleep-icon { background: rgba(124, 114, 255, 0.2); color: #7c72ff; }
+.icon-circle.phone-icon { background: rgba(236, 72, 153, 0.2); color: #e879f9; }
+.icon-circle.mission-icon { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+
+.score-bar-bg {
+    width: 100%;
+    height: 6px;
+    background: #3f4050;
+    border-radius: 3px;
+    overflow: hidden;
+}
+.score-bar-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.5s ease-out;
+}
+.score-bar-fill.sleep-fill { background: #7c72ff; }
+.score-bar-fill.phone-fill { background: #e879f9; }
+.score-bar-fill.mission-fill { background: #3b82f6; }
+
