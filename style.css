@@ -772,20 +772,20 @@ input:checked + .text-toggle-track .text-toggle-label.no {
 }
 
 .cal-state-low {
-    background-color: #ff6b81; /* 부족 */
+    background-color: #6a4c9c; /* 부족: 약간 어둡고 탁한 보라색 */
     color: white;
 }
 
 .cal-state-mid {
-    background-color: #6592ff; /* 보통 */
+    background-color: #9d78eb; /* 보통: 기본 보라색 */
     color: white;
 }
 
 .cal-state-high {
-    background: linear-gradient(135deg, #4850ff 0%, #0011ff 100%); /* 충분 */
+    background: linear-gradient(135deg, #d28cff 0%, #7a12ff 100%); /* 충분: 화사하고 선명한 보라색 그라데이션 */
     color: white;
     font-weight: 800;
-    box-shadow: 0 4px 12px rgba(72, 80, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(122, 18, 255, 0.4);
 }
 
 
