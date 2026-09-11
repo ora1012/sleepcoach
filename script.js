@@ -171,12 +171,12 @@ document.addEventListener("DOMContentLoaded", () => {
             const daySleepyRatio = recent.filter(r => r.daySleepy).length / count;
 
             const patterns = [];
-            let missionType = null;
+            const possibleMissions = [];
 
             // Rule 1: Sleep Duration
             if (avgSleep < 8.0) {
                 patterns.push(`주중에 권장보다<br><strong>${(8.0 - avgSleep).toFixed(1)}시간</strong><br>부족해요`);
-                if (!missionType) missionType = 'sleep_short';
+                possibleMissions.push('sleep_short');
             }
 
             // Rule 2: Phone Usage / Condition
@@ -190,20 +190,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 const condL = lowPhone.reduce((sum, r) => sum + r.condition, 0) / lowPhone.length;
                 if (condL - condH >= 1.0) {
                     patterns.push(`폰 사용이<br><strong>${medianPhone}분</strong> 넘은 날엔<br>컨디션이 낮았어요`);
-                    if (!missionType) missionType = 'phone_high';
+                    possibleMissions.push('phone_high');
                 }
             }
 
             // Rule 3: Irregular sleep
             if (stdDev >= 60) {
                 patterns.push(`자는 시간이<br>매일 <strong>들쭉날쭉해요</strong>`);
-                if (!missionType) missionType = 'sleep_irregular';
+                possibleMissions.push('sleep_irregular');
             }
 
             // Rule 4: Day sleepy
             if (daySleepyRatio >= 0.5) {
                 patterns.push(`이번 주 <strong>절반 이상</strong><br>낮에 졸렸어요`);
-                if (!missionType) missionType = 'day_sleepy';
+                possibleMissions.push('day_sleepy');
+            }
+            
+            let missionType = null;
+            if (possibleMissions.length > 0) {
+                missionType = possibleMissions[Math.floor(Math.random() * possibleMissions.length)];
             }
             
             // Add positive patterns if we don't have enough patterns
@@ -273,14 +278,42 @@ document.addEventListener("DOMContentLoaded", () => {
 
         getMissionText(type) {
             const map = {
-                sleep_short_urgent: "오늘은 평소보다 1시간 일찍 눕기",
-                sleep_short: "오늘은 평소보다 30분 일찍 누워보기",
-                phone_high: "오늘은 11시 전에 폰을 충전기에 꽂아두기",
-                sleep_irregular: "오늘은 어제와 같은 시각에 누워보기",
-                day_sleepy: "점심 후 10분 가벼운 산책하기",
-                positive: "오늘도 이대로 푹 자기! 가벼운 스트레칭 추천해요"
+                sleep_short_urgent: [
+                    "오늘은 평소보다 1시간 일찍 눕기",
+                    "오늘은 무조건 10시에 불 끄기",
+                    "수면 빚 청산의 날! 일찍 잠자리에 들기"
+                ],
+                sleep_short: [
+                    "오늘은 평소보다 30분 일찍 누워보기",
+                    "수면 부족! 오늘 밤엔 30분만 당겨서 자기",
+                    "내일의 활력을 위해 20분 먼저 눈 감기"
+                ],
+                phone_high: [
+                    "오늘은 11시 전에 폰을 충전기에 꽂아두기",
+                    "자기 전 30분은 폰 대신 스트레칭하기",
+                    "잠자리에서 스마트폰 보지 않기",
+                    "오늘은 유튜브 대신 잔잔한 음악 듣기"
+                ],
+                sleep_irregular: [
+                    "오늘은 어제와 같은 시각에 누워보기",
+                    "주말에도 평일처럼 같은 시간에 일어나기",
+                    "수면 리듬 되찾기! 정해진 시간에 눕기"
+                ],
+                day_sleepy: [
+                    "점심 후 10분 가벼운 산책하기",
+                    "낮에 졸리면 15분만 엎드려 낮잠 자기",
+                    "햇빛 보면서 10분 걷고 오기"
+                ],
+                positive: [
+                    "오늘도 이대로 푹 자기! 가벼운 스트레칭 추천해요",
+                    "좋은 수면 습관 유지 중! 자기 전 따뜻한 물 한잔 어때요?",
+                    "완벽해요! 오늘 밤도 좋은 꿈 꾸세요"
+                ]
             };
-            return map[type] || map.positive;
+            const options = map[type] || map.positive;
+            // Return a deterministic random choice based on today's date so it doesn't change on re-render within the same day
+            const dayOfMonth = new Date().getDate();
+            return options[dayOfMonth % options.length];
         },
 
         async getAiComment(result, todayRec) {
