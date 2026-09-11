@@ -767,12 +767,12 @@ input:checked + .text-toggle-track .text-toggle-label.no {
 }
 
 .cal-state-empty {
-    background-color: rgba(255, 255, 255, 0.05);
-    color: rgba(255, 255, 255, 0.4);
+    background-color: #2b2c3a;
+    color: #6e6f80;
 }
 
 .cal-state-low {
-    background-color: #9a7bff; /* 부족 */
+    background-color: #ff6b81; /* 부족 */
     color: white;
 }
 
@@ -782,8 +782,10 @@ input:checked + .text-toggle-track .text-toggle-label.no {
 }
 
 .cal-state-high {
-    background: linear-gradient(135deg, #7c72ff 0%, #4850ff 100%); /* 충분 */
+    background: linear-gradient(135deg, #4850ff 0%, #0011ff 100%); /* 충분 */
     color: white;
+    font-weight: 800;
+    box-shadow: 0 4px 12px rgba(72, 80, 255, 0.4);
 }
 
 

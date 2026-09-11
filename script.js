@@ -912,7 +912,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const monthRecs = AppState.records.filter(r => r.date.startsWith(monthPrefix));
             if (monthRecs.length > 0) {
                 const avg = monthRecs.reduce((sum, r) => sum + r.sleepHours, 0) / monthRecs.length;
-                const highCount = monthRecs.filter(r => r.sleepHours >= 7.5).length;
+                const highCount = monthRecs.filter(r => r.sleepHours >= 7).length;
                 if (this.els.calMonthlySummary) {
                     this.els.calMonthlySummary.textContent = `이달 기록 ${monthRecs.length}일 · 평균 ${avg.toFixed(1)}시간 · 충분히 잔 날 ${highCount}일`;
                 }
@@ -938,8 +938,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 let stateClass = 'cal-state-empty';
                 if (exist) {
-                    if (exist.sleepHours < 6) stateClass = 'cal-state-low';
-                    else if (exist.sleepHours < 7.5) stateClass = 'cal-state-mid';
+                    if (exist.sleepHours < 5) stateClass = 'cal-state-low';
+                    else if (exist.sleepHours < 7) stateClass = 'cal-state-mid';
                     else stateClass = 'cal-state-high';
                 }
 
