@@ -206,9 +206,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 possibleMissions.push('day_sleepy');
             }
             
-            let missionType = null;
+            let missionType = 'positive';
             if (possibleMissions.length > 0) {
-                missionType = possibleMissions[Math.floor(Math.random() * possibleMissions.length)];
+                const dayIndex = new Date().getDate();
+                missionType = possibleMissions[dayIndex % possibleMissions.length];
             }
             
             // Add positive patterns if we don't have enough patterns
@@ -276,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
             };
         },
 
-        getMissionText(type) {
+        getMissionText(type, legacyDateFallback = null) {
             const map = {
                 sleep_short_urgent: [
                     "오늘은 평소보다 1시간 일찍 눕기",
@@ -311,7 +312,11 @@ document.addEventListener("DOMContentLoaded", () => {
                 ]
             };
             const options = map[type] || map.positive;
-            // Return a deterministic random choice based on today's date so it doesn't change on re-render within the same day
+            
+            if (legacyDateFallback) {
+                return options[0];
+            }
+            
             const dayOfMonth = new Date().getDate();
             return options[dayOfMonth % options.length];
         },
@@ -839,7 +844,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     missionListEl.innerHTML = '<div style="text-align:center; color:var(--text-sub); padding: 20px;">기록된 미션이 없습니다.</div>';
                 } else {
                     sortedMissions.forEach(m => {
-                        const mText = m.text || "미션 정보 없음";
+                        const mText = m.text || Analyzer.getMissionText(m.type, m.date);
                         const isDone = m.done;
                         const isToday = m.date === todayStr;
                         
