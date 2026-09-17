@@ -833,11 +833,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
         updateMissionView() {
             const todayStr = AppState.todayDateStr;
-            const todayMiss = AppState.missions.find(m => m.date === todayStr);
+            const recs = AppState.records;
+            let todayMiss = AppState.missions.find(m => m.date === todayStr);
+            
+            if (!todayMiss && recs.length >= 3) {
+                const res = Analyzer.analyze(recs);
+                if (res) {
+                    const mText = Analyzer.getMissionText(res.missionType);
+                    todayMiss = { date: todayStr, type: res.missionType, text: mText, done: false };
+                    AppState.missions.push(todayMiss);
+                    StorageDB.saveMissions();
+                }
+            }
             
             if (!todayMiss) {
                 this.els.missionText.textContent = "아직 분석 데이터가 부족하여 미션이 없습니다.";
                 this.els.btnCompleteM.style.display = 'none';
+                this.els.missionActive.style.display = 'block';
+                this.els.missionDone.style.display = 'none';
             } else {
                 this.els.missionText.textContent = todayMiss.text;
                 if (todayMiss.done) {
