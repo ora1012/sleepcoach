@@ -254,6 +254,7 @@ body {
     color: var(--text-card-main);
     box-shadow: var(--shadow-card);
     margin-bottom: 16px;
+    flex-shrink: 0;
 }
 
 .ui-card h3 {
@@ -502,6 +503,9 @@ input:checked + .text-toggle-track .text-toggle-label.no {
     overflow: hidden;
     margin-bottom: 16px;
     box-shadow: var(--shadow-card);
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
 }
 
 .grad-card.dark {
@@ -602,19 +606,28 @@ input:checked + .text-toggle-track .text-toggle-label.no {
 .mission-card {
     padding: 30px 24px;
     text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 
 .mission-card h3 {
-    justify-content: flex-start;
+    display: flex;
+    justify-content: center;
+    align-items: center;
     gap: 8px;
+    width: 100%;
 }
 
 .mission-text {
-    font-size: 1.8rem;
+    font-size: 1.6rem;
     font-weight: 800;
-    line-height: 1.3;
-    margin: 20px 0 30px;
-    text-align: left;
+    line-height: 1.35;
+    margin: 24px 0;
+    text-align: center;
+    word-break: keep-all;
+    width: 100%;
 }
 
 .mission-illustration {

@@ -849,15 +849,19 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!todayMiss) {
                 this.els.missionText.textContent = "아직 분석 데이터가 부족하여 미션이 없습니다.";
                 this.els.btnCompleteM.style.display = 'none';
-                this.els.missionActive.style.display = 'block';
+                const illus = this.els.missionActive.querySelector('.mission-illustration');
+                if (illus) illus.style.display = 'none';
+                this.els.missionActive.style.display = 'flex';
                 this.els.missionDone.style.display = 'none';
             } else {
-                this.els.missionText.textContent = todayMiss.text;
+                this.els.missionText.textContent = todayMiss.text || "오늘의 수면 기록을 남겨보세요!";
+                const illus = this.els.missionActive.querySelector('.mission-illustration');
+                if (illus) illus.style.display = 'block';
                 if (todayMiss.done) {
                     this.els.missionActive.style.display = 'none';
-                    this.els.missionDone.style.display = 'block';
+                    this.els.missionDone.style.display = 'flex';
                 } else {
-                    this.els.missionActive.style.display = 'block';
+                    this.els.missionActive.style.display = 'flex';
                     this.els.missionDone.style.display = 'none';
                     this.els.btnCompleteM.style.display = 'block';
                 }
