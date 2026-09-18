@@ -255,6 +255,8 @@ body {
     box-shadow: var(--shadow-card);
     margin-bottom: 16px;
     flex-shrink: 0;
+    min-height: min-content;
+    height: auto;
 }
 
 .ui-card h3 {
@@ -506,6 +508,8 @@ input:checked + .text-toggle-track .text-toggle-label.no {
     flex-shrink: 0;
     display: flex;
     flex-direction: column;
+    min-height: min-content;
+    height: auto;
 }
 
 .grad-card.dark {
